@@ -130,7 +130,7 @@ jobs:
     needs: build-and-push
 
     steps:
-      - name: SSH: Pull images and restart containers on OCI VM
+      - name: "SSH: Pull images and restart containers on OCI VM"
         uses: appleboy/ssh-action@v1.0.3
         env:
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
