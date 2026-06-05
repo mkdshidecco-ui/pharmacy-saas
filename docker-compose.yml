@@ -27,25 +27,8 @@ services:
     ports:
       - "3000:3000"
 
-    # --------------------------------------------------------
-    # Prisma migration entrypoint
-    # Runs "prisma db push" on the system SQLite DB before
-    # starting Next.js. Safe to re-run on every container
-    # restart (idempotent). Tenant DBs are migrated lazily
-    # when each tenant is first accessed via the API.
-    # --------------------------------------------------------
-    entrypoint: >
-      sh -c "
-        echo '[entrypoint] Creating data directories...' &&
-        mkdir -p /data/system /data/tenants &&
-        echo '[entrypoint] Applying system DB schema...' &&
-        npx prisma db push
-          --schema=/app/prisma/system.prisma
-          --skip-generate
-          --accept-data-loss 2>&1 &&
-        echo '[entrypoint] Schema applied. Starting Next.js...' &&
-        exec node_modules/.bin/next start -p 3000
-      "
+    entrypoint: ["sh", "/app/entrypoint.sh"]
+    command: ["npm", "start"]
 
     environment:
       - PORT=3000
