@@ -130,14 +130,16 @@ jobs:
     needs: build-and-push
 
     steps:
-      - name: "SSH: Pull images and restart containers on OCI VM"
+      - name: SSH: Pull images and restart containers on OCI VM
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}  # 👈★この2行が絶対に必要です！
         with:
           host: ${{ secrets.OCI_VM_HOST }}
           username: ${{ secrets.OCI_VM_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
-          # Allow up to 5 minutes (GHCR pull on free-tier VM can be slow)
+          envs: GHCR_PAT
           timeout: 300s
           envs: GITHUB_REPOSITORY_OWNER,GHCR_PAT,GITHUB_ACTOR
           script: |
