@@ -1,0 +1,102 @@
+# ============================================================
+# docker-compose.yml
+# Production configuration for VM.Standard.E2.1.Micro (1GB RAM)
+#
+# Pre-requisites on the OCI VM:
+#   - 2GB swap enabled (run swap_setup.sh once)
+#   - Docker + Docker Compose installed
+#   - .env.production file created (copy from .env.production.example)
+#   - GHCR images pre-built via GitHub Actions
+#
+# Usage:
+#   docker compose --env-file .env.production up -d
+# ============================================================
+
+version: '3.8'
+
+services:
+  web:
+    # --------------------------------------------------------
+    # Pre-built image from GitHub Container Registry.
+    # Set GHCR_IMAGE_WEB in .env.production, e.g.:
+    #   GHCR_IMAGE_WEB=ghcr.io/your-github-user/pharmacy-saas-web:latest
+    # --------------------------------------------------------
+    image: ${GHCR_IMAGE_WEB:-ghcr.io/YOUR_GITHUB_USER/pharmacy-saas-web:latest}
+    container_name: pharmacy-saas-web
+    restart: always
+    ports:
+      - "3000:3000"
+
+    # --------------------------------------------------------
+    # Prisma migration entrypoint
+    # Runs "prisma db push" on the system SQLite DB before
+    # starting Next.js. Safe to re-run on every container
+    # restart (idempotent). Tenant DBs are migrated lazily
+    # when each tenant is first accessed via the API.
+    # --------------------------------------------------------
+    entrypoint: >
+      sh -c "
+        echo '[entrypoint] Creating data directories...' &&
+        mkdir -p /data/system /data/tenants &&
+        echo '[entrypoint] Applying system DB schema...' &&
+        npx prisma db push
+          --schema=/app/prisma/system.prisma
+          --skip-generate
+          --accept-data-loss 2>&1 &&
+        echo '[entrypoint] Schema applied. Starting Next.js...' &&
+        exec node_modules/.bin/next start -p 3000
+      "
+
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATA_ROOT=/data
+      - SYSTEM_DATABASE_URL=file:/data/system/tenants.db
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@pharmacy-saas.local}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme}
+      - SESSION_SECRET=${SESSION_SECRET:-pharmacy-saas-secret-key-change-in-production-must-be-32chars}
+      # Limit Node.js heap to prevent OOM on 1GB VM
+      - NODE_OPTIONS=--max-old-space-size=256
+
+    volumes:
+      - saas-data:/data
+
+    # Memory limits for 1GB VM (web: 300MB, OS+linebot: ~400MB remaining)
+    mem_limit: 300m
+    memswap_limit: 600m
+
+  linebot:
+    # --------------------------------------------------------
+    # Pre-built image from GitHub Container Registry.
+    # Set GHCR_IMAGE_LINEBOT in .env.production, e.g.:
+    #   GHCR_IMAGE_LINEBOT=ghcr.io/your-github-user/pharmacy-saas-linebot:latest
+    # --------------------------------------------------------
+    image: ${GHCR_IMAGE_LINEBOT:-ghcr.io/YOUR_GITHUB_USER/pharmacy-saas-linebot:latest}
+    container_name: pharmacy-saas-linebot
+    restart: always
+    ports:
+      - "3005:3005"
+
+    environment:
+      - PORT=3005
+      - NODE_ENV=production
+      - DATA_ROOT=/data
+      - SYSTEM_DATABASE_URL=file:/data/system/tenants.db
+      - LINE_CHANNEL_ACCESS_TOKEN=${LINE_CHANNEL_ACCESS_TOKEN:-}
+      - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
+      # Limit Node.js heap for linebot (lighter workload than web)
+      - NODE_OPTIONS=--max-old-space-size=128
+
+    volumes:
+      - saas-data:/data
+
+    # Memory limit: linebot is lightweight (Express + better-sqlite3)
+    mem_limit: 150m
+    memswap_limit: 300m
+
+    depends_on:
+      - web
+
+volumes:
+  saas-data:
+    name: saas-data-volume

@@ -1,0 +1,204 @@
+name: Build & Deploy to OCI VM
+
+# ============================================================
+# Triggers:
+#   - push to main   : build images + deploy automatically
+#   - workflow_dispatch : manual trigger from GitHub Actions UI
+#                         (build + deploy, useful for re-deploys)
+# ============================================================
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_WEB: ghcr.io/${{ github.repository_owner }}/pharmacy-saas-web
+  IMAGE_LINEBOT: ghcr.io/${{ github.repository_owner }}/pharmacy-saas-linebot
+
+jobs:
+  # ============================================================
+  # JOB 1: Build Docker images on GitHub-hosted runner
+  #
+  # Rationale: OCI VM.Standard.E2.1.Micro has only 1GB RAM.
+  # Building Next.js inside the container would freeze the VM.
+  # We build on GitHub's free ubuntu-latest runner instead and
+  # push the finished images to GHCR (GitHub Container Registry).
+  # ============================================================
+  build-and-push:
+    name: "Job1: Build & Push to GHCR"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # Required to push packages to GHCR
+
+    steps:
+      # ---------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------
+      # Login to GHCR using the built-in GITHUB_TOKEN.
+      # No extra secrets needed for this step.
+      # ---------------------------------------------------------
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---------------------------------------------------------
+      # Setup Buildx for layer caching support
+      # ---------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # =========================================================
+      # Web App image
+      # =========================================================
+      - name: "Web: Extract image metadata"
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_WEB }}
+          tags: |
+            # Branch name tag  (e.g. "main")
+            type=ref,event=branch
+            # Short commit SHA  (e.g. "sha-abc1234")
+            type=sha,prefix=sha-
+            # "latest" tag only on main branch pushes
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: "Web: Build and push image"
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/web
+          dockerfile: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          # Reuse cached layers between runs (speeds up builds significantly)
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # =========================================================
+      # LINE Bot image
+      # =========================================================
+      - name: "Linebot: Extract image metadata"
+        id: meta-linebot
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_LINEBOT }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: "Linebot: Build and push image"
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/linebot
+          dockerfile: ./apps/linebot/Dockerfile
+          push: true
+          tags: ${{ steps.meta-linebot.outputs.tags }}
+          labels: ${{ steps.meta-linebot.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================
+  # JOB 2: Deploy to OCI VM via SSH
+  #
+  # Runs after Job1 succeeds. SSHes into the OCI VM and:
+  #   1. Pulls the latest docker-compose.yml from Git
+  #   2. Pulls the newly built images from GHCR (no build!)
+  #   3. Restarts containers (entrypoint runs prisma db push)
+  #
+  # Required GitHub Secrets (Settings > Secrets > Actions):
+  #   OCI_VM_HOST   : Public IP address of the OCI VM
+  #   OCI_VM_USER   : SSH login user (e.g. "ubuntu" or "opc")
+  #   OCI_SSH_KEY   : Private SSH key in PEM format
+  #   GHCR_PAT      : GitHub Personal Access Token with
+  #                   read:packages scope (for docker login on VM)
+  #                   Create at: GitHub > Settings > Developer settings
+  #                   > Personal access tokens > Fine-grained tokens
+  # ============================================================
+  deploy:
+    name: "Job2: Deploy to OCI VM via SSH"
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: "SSH: Pull images and restart containers on OCI VM"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_VM_HOST }}
+          username: ${{ secrets.OCI_VM_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          # Allow up to 5 minutes (GHCR pull on free-tier VM can be slow)
+          timeout: 300s
+          envs: GITHUB_REPOSITORY_OWNER,GHCR_PAT,GITHUB_ACTOR
+          script: |
+            set -euo pipefail
+
+            echo "========================================"
+            echo " PharmaSaaS Deployment"
+            echo " Triggered by: $GITHUB_ACTOR"
+            echo "========================================"
+
+            # ------------------------------------------------
+            # [1/4] Login to GHCR on the VM
+            #       Uses GHCR_PAT secret (read:packages scope)
+            # ------------------------------------------------
+            echo "[1/4] Logging in to GHCR..."
+            echo "$GHCR_PAT" | docker login ghcr.io \
+              --username "$GITHUB_ACTOR" \
+              --password-stdin
+            echo "      Login OK."
+
+            # ------------------------------------------------
+            # [2/4] Update docker-compose.yml on the VM
+            #       Pulls only the latest changes from Git
+            #       (avoids full re-clone every time)
+            # ------------------------------------------------
+            echo "[2/4] Updating repository on VM..."
+            cd ~/pharmacy-saas
+            git pull --ff-only origin main
+            echo "      Repository updated."
+
+            # ------------------------------------------------
+            # [3/4] Pull the latest pre-built images from GHCR
+            #       (no docker build on VM!)
+            # ------------------------------------------------
+            echo "[3/4] Pulling latest images from GHCR..."
+            export GHCR_IMAGE_WEB=ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest
+            export GHCR_IMAGE_LINEBOT=ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest
+            docker compose \
+              --env-file .env.production \
+              pull
+            echo "      Images pulled."
+
+            # ------------------------------------------------
+            # [4/4] Restart containers
+            #       --no-build : never build on VM
+            #       -d         : detached (background) mode
+            #       The web container entrypoint automatically
+            #       runs "prisma db push" before Next.js starts.
+            # ------------------------------------------------
+            echo "[4/4] Restarting containers..."
+            docker compose \
+              --env-file .env.production \
+              up -d --no-build
+            echo "      Containers started."
+
+            # ------------------------------------------------
+            # Summary
+            # ------------------------------------------------
+            echo ""
+            echo "=== Deployment complete ==="
+            docker compose ps
+            echo ""
+            echo "Memory usage:"
+            free -h
