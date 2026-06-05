@@ -183,14 +183,15 @@ jobs:
 
             # ------------------------------------------------
             # [3/4] Pull the latest pre-built images from GHCR
-            #       -e オプションでイメージ変数を直接注入。
-            #       --env-file より -e が優先されるため確実に反映される。
+            #       export でシェル変数を定義。
+            #       Docker Compose v2 ではシェル変数が --env-file より
+            #       優先されるため、確実にイメージ名が解決される。
             # ------------------------------------------------
             echo "[3/4] Pulling latest images from GHCR..."
+            export GHCR_IMAGE_WEB="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest"
+            export GHCR_IMAGE_LINEBOT="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest"
             docker compose \
               --env-file .env.production \
-              -e GHCR_IMAGE_WEB="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest" \
-              -e GHCR_IMAGE_LINEBOT="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest" \
               pull
             echo "      Images pulled."
 
@@ -204,8 +205,6 @@ jobs:
             echo "[4/4] Restarting containers..."
             docker compose \
               --env-file .env.production \
-              -e GHCR_IMAGE_WEB="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest" \
-              -e GHCR_IMAGE_LINEBOT="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest" \
               up -d --no-build
             echo "      Containers started."
 
