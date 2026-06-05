@@ -162,13 +162,23 @@ jobs:
             echo "      Login OK."
 
             # ------------------------------------------------
-            # [2/4] Update docker-compose.yml on the VM
-            #       Pulls only the latest changes from Git
-            #       (avoids full re-clone every time)
+            # [2/4] Update repository on the VM
+            #       - 初回: git clone でリポジトリを取得
+            #       - 2回目以降: git pull で差分のみ取得
             # ------------------------------------------------
             echo "[2/4] Updating repository on VM..."
-            cd ~/pharmacy-saas
-            git pull --ff-only origin main
+            REPO_DIR=~/pharmacy-saas
+            REPO_URL="https://${GHCR_PAT}@github.com/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas.git"
+
+            if [ -d "$REPO_DIR/.git" ]; then
+              echo "      Repository exists. Pulling latest changes..."
+              cd "$REPO_DIR"
+              git pull --ff-only origin main
+            else
+              echo "      Repository not found. Cloning for the first time..."
+              git clone "$REPO_URL" "$REPO_DIR"
+              cd "$REPO_DIR"
+            fi
             echo "      Repository updated."
 
             # ------------------------------------------------
