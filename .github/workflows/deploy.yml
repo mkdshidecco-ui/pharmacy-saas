@@ -133,13 +133,14 @@ jobs:
       - name: SSH: Pull images and restart containers on OCI VM
         uses: appleboy/ssh-action@v1.0.3
         env:
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}  # 👈★この2行が絶対に必要です！
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_ACTOR: ${{ github.actor }}
         with:
           host: ${{ secrets.OCI_VM_HOST }}
           username: ${{ secrets.OCI_VM_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
-          envs: GHCR_PAT
           timeout: 300s
           envs: GITHUB_REPOSITORY_OWNER,GHCR_PAT,GITHUB_ACTOR
           script: |
