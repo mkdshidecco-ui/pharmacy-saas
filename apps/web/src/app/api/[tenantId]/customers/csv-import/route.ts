@@ -188,7 +188,7 @@ export async function POST(
                 productId: r.productId,
                 quantity: r.quantity,
               })),
-              skipDuplicates: true,
+              // skipDuplicates: true,
             });
           }
         });
