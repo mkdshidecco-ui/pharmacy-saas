@@ -42,7 +42,7 @@ export async function DELETE(
     if (!tenant) return NextResponse.json({ error: 'テナントが見つかりません' }, { status: 404 });
 
     await systemDb.tenant.delete({ where: { id } });
-    return NextResponse.json({ success: true, message: `テナント「${tenant.displayName}」を削除しました。DBファイル (/data/tenants/${tenant.slug}/) は手動で削除してください。` });
+    return NextResponse.json({ success: true, message: `テナント「${tenant.displayName}」を削除しました。DBファイル (/data/tenants/${tenant.id}/) は手動で削除してください。` });
   } catch (error) {
     console.error('Delete tenant error:', error);
     return NextResponse.json({ error: 'テナントの削除に失敗しました' }, { status: 500 });

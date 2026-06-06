@@ -25,14 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '店舗IDは英小文字・数字・ハイフンのみ使用できます' }, { status: 400 });
     }
 
-    // テナントDBディレクトリ作成
-    const dataRoot = process.env.DATA_ROOT || '/data';
-    const tenantDataDir = path.join(dataRoot, 'tenants', slug);
-    if (!fs.existsSync(tenantDataDir)) {
-      fs.mkdirSync(tenantDataDir, { recursive: true });
-    }
-
-    // システムDBに登録
+    // 先にシステムDBに登録して ID (UUID) を取得する
     const tenant = await systemDb.tenant.create({
       data: {
         slug,
@@ -42,6 +35,13 @@ export async function POST(request: Request) {
         lineChannelAccessToken: lineChannelAccessToken || null,
       },
     });
+
+    // テナントDBディレクトリ作成（UUID の tenant.id を使用）
+    const dataRoot = process.env.DATA_ROOT || '/data';
+    const tenantDataDir = path.join(dataRoot, 'tenants', tenant.id);
+    if (!fs.existsSync(tenantDataDir)) {
+      fs.mkdirSync(tenantDataDir, { recursive: true });
+    }
 
     // テナントDBを初期化（prisma db push）
     try {
@@ -54,7 +54,10 @@ export async function POST(request: Request) {
       });
     } catch (migrateError) {
       console.error('DB init error:', migrateError);
-      // ロールバック
+      // ロールバック (作成したDBフォルダの削除とレコードの削除)
+      if (fs.existsSync(tenantDataDir)) {
+        fs.rmSync(tenantDataDir, { recursive: true, force: true });
+      }
       await systemDb.tenant.delete({ where: { id: tenant.id } });
       return NextResponse.json({ error: 'テナントDBの初期化に失敗しました。ログを確認してください。' }, { status: 500 });
     }
