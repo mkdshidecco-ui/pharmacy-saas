@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth';
 import { systemDb } from '@/lib/system-db';
-import { execSync } from 'child_process';
+import { getTenantDb } from '@/lib/tenant-db';
+import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
 
@@ -16,10 +17,19 @@ export async function GET() {
 export async function POST(request: Request) {
   await requireAdmin();
   try {
-    const { slug, displayName, industry, lineChannelSecret, lineChannelAccessToken } = await request.json();
+    const {
+      slug,
+      displayName,
+      industry,
+      lineChannelSecret,
+      lineChannelAccessToken,
+      adminEmail,
+      adminPassword,
+      adminName,
+    } = await request.json();
 
-    if (!slug || !displayName) {
-      return NextResponse.json({ error: '店舗ID（スラッグ）と店舗名は必須です' }, { status: 400 });
+    if (!slug || !displayName || !adminEmail || !adminPassword || !adminName) {
+      return NextResponse.json({ error: '店舗ID、店舗名、管理者アカウント情報は必須です' }, { status: 400 });
     }
     if (!/^[a-z0-9-]+$/.test(slug)) {
       return NextResponse.json({ error: '店舗IDは英小文字・数字・ハイフンのみ使用できます' }, { status: 400 });
@@ -44,9 +54,9 @@ export async function POST(request: Request) {
     }
 
     // テナントDBを初期化（テンプレートDBのコピー方式）
+    const dbPath = path.join(tenantDataDir, 'dev.db');
     try {
       const templatePath = path.join(dataRoot, 'system', 'tenant-template.db');
-      const dbPath = path.join(tenantDataDir, 'dev.db');
 
       if (!fs.existsSync(templatePath)) {
         throw new Error('Tenant DB template not found. Please restart the container to generate it.');
@@ -62,6 +72,29 @@ export async function POST(request: Request) {
       }
       await systemDb.tenant.delete({ where: { id: tenant.id } });
       return NextResponse.json({ error: 'テナントDBの初期化に失敗しました。' }, { status: 500 });
+    }
+
+    // 初期管理者アカウントの作成
+    try {
+      const tenantDb = getTenantDb(tenant.id);
+      const hashedPassword = await bcrypt.hash(adminPassword, 12);
+      await tenantDb.user.create({
+        data: {
+          email: adminEmail.trim(),
+          password: hashedPassword,
+          name: adminName.trim(),
+          role: 'owner', // 初期登録ユーザーはowner権限
+        },
+      });
+      console.log(`Created initial admin user for tenant ${slug}: ${adminEmail}`);
+    } catch (userError) {
+      console.error('Failed to create initial admin user:', userError);
+      // ロールバック (作成したDBフォルダの削除とレコードの削除)
+      if (fs.existsSync(tenantDataDir)) {
+        fs.rmSync(tenantDataDir, { recursive: true, force: true });
+      }
+      await systemDb.tenant.delete({ where: { id: tenant.id } });
+      return NextResponse.json({ error: '初期管理者ユーザーの作成に失敗しました。' }, { status: 500 });
     }
 
     return NextResponse.json(tenant, { status: 201 });
