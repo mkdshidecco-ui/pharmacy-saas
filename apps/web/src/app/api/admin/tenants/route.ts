@@ -43,15 +43,17 @@ export async function POST(request: Request) {
       fs.mkdirSync(tenantDataDir, { recursive: true });
     }
 
-    // テナントDBを初期化（prisma db push）
+    // テナントDBを初期化（テンプレートDBのコピー方式）
     try {
-      const schemaPath = path.join(process.cwd(), 'prisma', 'tenant.prisma');
-      const dbUrl = `file:${path.join(tenantDataDir, 'dev.db')}`;
-      execSync(`npx prisma db push --schema=${schemaPath} --skip-generate`, {
-        env: { ...process.env, TENANT_DATABASE_URL: dbUrl },
-        stdio: 'pipe',
-        timeout: 60000,
-      });
+      const templatePath = path.join(dataRoot, 'system', 'tenant-template.db');
+      const dbPath = path.join(tenantDataDir, 'dev.db');
+
+      if (!fs.existsSync(templatePath)) {
+        throw new Error('Tenant DB template not found. Please restart the container to generate it.');
+      }
+
+      fs.copyFileSync(templatePath, dbPath);
+      console.log(`Initialized tenant DB via template: ${dbPath}`);
     } catch (migrateError) {
       console.error('DB init error:', migrateError);
       // ロールバック (作成したDBフォルダの削除とレコードの削除)
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
         fs.rmSync(tenantDataDir, { recursive: true, force: true });
       }
       await systemDb.tenant.delete({ where: { id: tenant.id } });
-      return NextResponse.json({ error: 'テナントDBの初期化に失敗しました。ログを確認してください。' }, { status: 500 });
+      return NextResponse.json({ error: 'テナントDBの初期化に失敗しました。' }, { status: 500 });
     }
 
     return NextResponse.json(tenant, { status: 201 });

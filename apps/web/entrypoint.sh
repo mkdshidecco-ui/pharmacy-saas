@@ -18,13 +18,28 @@ echo "      /data/system  OK"
 echo "      /data/tenants OK"
 
 # --- 2. Push system DB schema (idempotent: safe on every restart) ---
-echo "[2/3] Applying system DB schema (prisma db push)..."
+echo "[2/4] Applying system DB schema (prisma db push)..."
 npx prisma db push \
   --schema=/app/prisma/system.prisma \
   --skip-generate \
   --accept-data-loss 2>&1 | grep -v "^$" || true
 echo "      System DB schema applied."
 
-# --- 3. Start the Next.js application ---
-echo "[3/3] Starting Next.js (NODE_ENV=${NODE_ENV})..."
+# --- 3. Create tenant database template ---
+echo "[3/4] Preparing tenant database template..."
+TEMPLATE_DB_PATH="/data/system/tenant-template.db"
+if [ ! -f "$TEMPLATE_DB_PATH" ]; then
+  echo "      Creating tenant-template.db..."
+  export TENANT_DATABASE_URL="file:$TEMPLATE_DB_PATH"
+  npx prisma db push \
+    --schema=/app/prisma/tenant.prisma \
+    --skip-generate \
+    --accept-data-loss 2>&1 | grep -v "^$" || true
+  echo "      Tenant database template created."
+else
+  echo "      Tenant database template already exists."
+fi
+
+# --- 4. Start the Next.js application ---
+echo "[4/4] Starting Next.js (NODE_ENV=${NODE_ENV})..."
 exec "$@"
