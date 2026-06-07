@@ -25,10 +25,8 @@ export function getTenantDb(tenantId: string): TenantPrismaClient {
     },
   });
 
-  // 開発環境ではキャッシュ（Hot Reloadで接続が増えすぎないよう）
-  if (process.env.NODE_ENV !== 'production') {
-    clientCache.set(tenantId, client);
-  }
+  // 接続の再利用とクエリエンジン起動負荷削減のため、開発・本番環境ともにキャッシュする
+  clientCache.set(tenantId, client);
 
   return client;
 }
