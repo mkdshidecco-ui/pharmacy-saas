@@ -165,6 +165,7 @@ export interface CalendarVisit {
   customerId: string;
   customerName: string;
   visitDate: string; // YYYY-MM-DD
+  visitInterval: number;
   requirements: { productId: string; productName: string; quantity: number }[];
 }
 
@@ -224,6 +225,7 @@ export async function getCalendarVisits(
         customerId: customer.id,
         customerName: customer.name,
         visitDate: dateStr,
+        visitInterval: interval,
         requirements: customer.requirements.map((r) => ({
           productId: r.productId,
           productName: r.product.name,

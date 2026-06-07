@@ -94,7 +94,7 @@ export default function TenantCalendar() {
     setVisitModalCustomer({
       customerId: visit.customerId,
       customerName: visit.customerName,
-      visitInterval: 14,
+      visitInterval: visit.visitInterval || 14,
       requirements: visit.requirements.map((r: any) => ({
         productId: r.productId || '',
         productName: r.productName,
@@ -102,24 +102,23 @@ export default function TenantCalendar() {
       })),
     });
 
-    fetch(`/api/${tenantId}/customers`)
+    fetch(`/api/${tenantId}/customers/${visit.customerId}`)
       .then((res) => res.json())
-      .then((customers) => {
-        const found = customers.find((c: any) => c.id === visit.customerId);
-        if (found) {
+      .then((customer) => {
+        if (customer && !customer.error) {
           setVisitModalCustomer({
-            customerId: found.id,
-            customerName: found.name,
-            visitInterval: found.visitInterval,
-            requirements: found.requirements.map((r: any) => ({
+            customerId: customer.id,
+            customerName: customer.name,
+            visitInterval: customer.visitInterval,
+            requirements: customer.requirements.map((r: any) => ({
               productId: r.productId,
               productName: r.product.name,
               quantity: r.quantity,
             })),
           });
-          setVisitNextInterval(found.visitInterval);
+          setVisitNextInterval(customer.visitInterval);
           setVisitActualItems(
-            found.requirements.map((r: any) => ({
+            customer.requirements.map((r: any) => ({
               productId: r.productId,
               productName: r.product.name,
               usedQty: r.quantity,
@@ -127,9 +126,10 @@ export default function TenantCalendar() {
             }))
           );
         }
-      });
+      })
+      .catch((err) => console.error('Failed to fetch customer detail:', err));
 
-    setVisitNextInterval(14);
+    setVisitNextInterval(visit.visitInterval || 14);
     setVisitActualItems(
       visit.requirements.map((r: any) => ({
         productId: r.productId || '',
@@ -257,7 +257,9 @@ export default function TenantCalendar() {
   const handleCellDragOver = (e: React.DragEvent, dateStr: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverDate(dateStr);
+    if (dragOverDate !== dateStr) {
+      setDragOverDate(dateStr);
+    }
   };
 
   const handleCellDragLeave = () => {
@@ -293,7 +295,12 @@ export default function TenantCalendar() {
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!el) return;
     const cell = el.closest('[data-calendar-date]');
-    if (cell) setDragOverDate(cell.getAttribute('data-calendar-date'));
+    if (cell) {
+      const targetDate = cell.getAttribute('data-calendar-date');
+      if (dragOverDate !== targetDate) {
+        setDragOverDate(targetDate);
+      }
+    }
   };
 
   const handleVisitTouchEnd = async () => {
@@ -314,10 +321,16 @@ export default function TenantCalendar() {
     try {
       // lastVisitDate を (新日付 - visitInterval) に設定して nextVisitDate を再計算させる
       const newDate = new Date(newDateStr + 'T00:00:00Z');
+      const interval = visit.visitInterval || 14;
+      const lastVisit = new Date(newDate);
+      lastVisit.setUTCDate(lastVisit.getUTCDate() - interval);
+      const lastVisitStr = lastVisit.toISOString().split('T')[0];
+
       const res = await fetch(`/api/${tenantId}/customers/${visit.customerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          lastVisitDate: lastVisitStr,
           nextVisitDate: newDateStr,
         }),
       });
@@ -436,11 +449,21 @@ export default function TenantCalendar() {
 
       {/* カレンダーグリッド */}
       <div className="grid grid-cols-7 gap-2">
-        {calendarDays.map((day, idx) => {
-          const dateStr = day.toISOString().split('T')[0];
-          const isToday = dateStr === todayStr;
-          const isDragTarget = dragOverDate === dateStr;
-          const dayVisits = calendarData?.visits?.filter((v: any) => v.visitDate === dateStr) || [];
+        {(() => {
+          // Group visits by date for O(1) rendering lookup to avoid performance lag
+          const visitsByDate = calendarData?.visits?.reduce((acc: any, v: any) => {
+            if (!acc[v.visitDate]) {
+              acc[v.visitDate] = [];
+            }
+            acc[v.visitDate].push(v);
+            return acc;
+          }, {}) || {};
+
+          return calendarDays.map((day, idx) => {
+            const dateStr = day.toISOString().split('T')[0];
+            const isToday = dateStr === todayStr;
+            const isDragTarget = dragOverDate === dateStr;
+            const dayVisits = visitsByDate[dateStr] || [];
 
           return (
             <div
@@ -505,7 +528,7 @@ export default function TenantCalendar() {
               </div>
             </div>
           );
-        })}
+        })})()}
       </div>
 
       {/* 来店完了モーダル */}
