@@ -16,6 +16,76 @@ import {
 } from 'lucide-react';
 import { formatFloat } from '@/lib/utils';
 
+const kanjiFirstCharMap: Record<string, string> = {
+  // あ行
+  '青': 'あ', '赤': 'あ', '秋': 'あ', '浅': 'あ', '朝': 'あ', '荒': 'あ', '飯': 'あ', '今': 'あ', '岩': 'あ',
+  '伊': 'い', '井': 'い', '池': 'い', '石': 'い', '市': 'い', '稲': 'い', '犬': 'い', '五十': 'い', '入': 'い',
+  '上': 'う', '内': 'う', '宇': 'う', '梅': 'う', '江': 'え', '遠': 'え',
+  '尾': 'お', '岡': 'お', '奥': 'お', '織': 'お',
+
+  // か行
+  '加': 'か', '川': 'か', '河': 'か', '神': 'か', '菅': 'か', '片': 'か', '金': 'か', '木': 'か', '菊': 'か', '岸': 'か', '北': 'か',
+  '工': 'く', '久': 'く', '黒': 'く', '栗': 'く', '桑': 'く', '倉': 'く',
+  '古': 'こ', '近': 'こ', '児': 'こ', '小': 'こ',
+  '後': 'ご', '国': 'く', '甲': 'か', '郡': 'ぐ', '鎌': 'か', '香': 'か', '門': 'か', '笠': 'か', '柏': 'か', '梶': 'か', '貝': 'か', '勝': 'か', '桂': 'か', '苅': 'か',
+
+  // さ行
+  '佐': 'さ', '坂': 'さ', '阪': 'さ', '桜': 'さ', '笹': 'さ', '酒': 'さ', '境': 'さ', '栄': 'さ', '沢': 'さ', '斉': 'さ', '斎': 'さ', '齊': 'さ', '齋': 'さ',
+  '塩': 'し', '志': 'し', '篠': 'し', '柴': 'し', '渋': 'し', '島': 'し', '嶋': 'し', '清': 'し', '白': 'し', '城': 'し', '庄': 'し', '新': 'し', '進': 'し', '下': 'し', '鹿': 'し',
+  '杉': 'す', '鈴': 'す', '住': 'す', '砂': 'す', '須': 'す',
+  '関': 'せ',
+  '相': 'そ', '曽': 'そ', '園': 'そ',
+
+  // た行
+  '高': 'た', '田': 'た', '多': 'た', '竹': 'た', '武': 'た', '滝': 'た', '瀧': 'た', '立': 'た', '橘': 'た', '舘': 'た', '館': 'た', '谷': 'た', '玉': 'た',
+  '辻': 'つ', '津': 'つ', '塚': 'つ', '土': 'つ', '堤': 'つ', '都': 'つ', '筒': 'つ', '坪': 'つ', '鶴': 'つ',
+  '手': 'て', '寺': 'て', '照': 'て',
+  '戸': 'と', '藤': 'と', '富': 'と', '豊': 'と', '鳥': 'と',
+
+  // な行
+  '中': 'な', '永': 'な', '長': 'な', '那': 'な', '名': 'な', '夏': 'な', '成': 'な', '難': 'な', '生': 'な', '並': 'な', '奈良': 'な',
+  '西': 'い', '二': 'に', '仁': 'に', '丹': 'た',
+  '沼': 'ぬ',
+  '根': 'ね',
+  '野': 'の', '能': 'の',
+
+  // は行
+  '原': 'は', '羽': 'は', '橋': 'は', '波': 'は', '畑': 'は', '早': 'は', '林': 'は', '針': 'は', '花': 'は', '芳': 'は', '葉': 'は',
+  '東': 'ひ', '日': 'ひ', '平': 'ひ', '広': 'ひ', '比': 'ひ', '樋': 'ひ', '兵': 'ひ',
+  '福': 'ふ', '深': 'ふ', '船': 'ふ', '舟': 'ふ', '伏': 'ふ',
+  '本': 'ほ', '堀': 'ほ', '星': 'ほ', '細': 'ほ', '保': 'ほ',
+
+  // ま行
+  '前': 'ま', '牧': 'ま', '増': 'ま', '松': 'ま', '丸': 'ま', '町': 'ま', '真': 'ま', '馬': 'ま', '間': 'ま',
+  '水': 'み', '三': 'み', '宮': 'み', '皆': 'み', '溝': 'み', '南': 'み',
+  '村': 'む', '向': 'む', '室': 'む',
+  '森': 'も', '望': 'も', '毛': 'も', '茂': 'も',
+
+  // や行
+  '山': 'や', '矢': 'や', '八': 'や', '柳': 'や', '安': 'や',
+  '家': 'い',
+  '湯': 'ゆ', '結': 'ゆ',
+  '吉': 'よ', '横': 'よ', '米': 'よ',
+
+  // ら行
+  '六': 'ろ', '落': 'お', '利': 'り', '留': 'る', '龍': 'り',
+
+  // わ行
+  '渡': 'わ', '和': 'わ', '若': 'わ', '脇': 'わ', '鷲': 'わ', '綿': 'わ', '輪': 'わ',
+  '葛': 'か', '胃': 'い', '解': 'か', '鎮': 'ち', '痛み': 'い', '風': 'か', '漢': 'か', '麻': 'ま'
+};
+
+const getPhoneticFirstChar = (name: string): string => {
+  if (!name) return '';
+  const first = name.charAt(0);
+  const code = first.charCodeAt(0);
+  // ひらがな・カタカナの場合はそのまま返す
+  if ((code >= 0x3040 && code <= 0x309F) || (code >= 0x30A0 && code <= 0x30FF)) {
+    return first;
+  }
+  return kanjiFirstCharMap[first] || first;
+};
+
 export default function TenantInventory() {
   const params = useParams();
   const tenantId = params?.tenantId as string;
@@ -357,36 +427,44 @@ export default function TenantInventory() {
   // あいうえおインデックス
   const kanaRows = ['あ','か','さ','た','な','は','ま','や','ら','わ'];
   const kanaRanges: Record<string, string[]> = {
-    'あ': ['あ','い','う','え','お'],
-    'か': ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご'],
-    'さ': ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ'],
-    'た': ['た','ち','つ','て','と','だ','ぢ','づ','で','ど'],
-    'な': ['な','に','ぬ','ね','の'],
-    'は': ['は','ひ','ふ','へ','ほ','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
-    'ま': ['ま','み','む','め','も'],
-    'や': ['や','ゆ','よ'],
-    'ら': ['ら','り','る','れ','ろ'],
-    'わ': ['わ','ゐ','ゑ','を','ん'],
+    'あ': ['あ','い','う','え','お', 'ア','イ','ウ','エ','オ'],
+    'か': ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご', 'カ','キ','ク','ケ','コ','ガ','ギ','グ','ゲ','ゴ'],
+    'さ': ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ', 'サ','シ','ス','セ','ソ','ザ','ジ','ズ','ゼ','ゾ'],
+    'た': ['た','ち','つ','て','と','だ','ぢ','づ','で','ど', 'タ','チ','ツ','テ','ト','ダ','ヂ','ヅ','デ','ド'],
+    'な': ['な','に','ぬ','ね','の', 'ナ','ニ','ヌ','ネ','ノ'],
+    'は': ['は','ひ','ふ','へ','ほ','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ', 'ハ','ヒ','フ','ヘ','ホ','バ','ビ','ブ','ベ','ボ','パ','ピ','プ','ペ','ポ'],
+    'ま': ['ま','み','む','め','も', 'マ','ミ','ム','メ','モ'],
+    'や': ['や','ゆ','よ', 'ヤ','ユ','ヨ'],
+    'ら': ['ら','り','る','れ','ろ', 'ラ','リ','ル','レ','ロ'],
+    'わ': ['わ','ゐ','ゑ','を','ん', 'ワ','ワ','ヰ','ヱ','ヲ','ン'],
   };
   const productListRef = useRef<HTMLDivElement>(null);
   const scrollToKana = (kana: string) => {
     if (!productListRef.current) return;
     const chars = kanaRanges[kana] || [kana];
     const items = productListRef.current.querySelectorAll('[data-product-name]');
+    
+    // Find matching item using getPhoneticFirstChar
     for (const item of Array.from(items)) {
       const name = item.getAttribute('data-product-name') || '';
-      if (chars.some(c => name.startsWith(c))) {
-        item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const phoneticFirst = getPhoneticFirstChar(name);
+      if (chars.some(c => name.startsWith(c) || phoneticFirst === c)) {
+        const container = productListRef.current;
+        container.scrollTo({ top: (item as HTMLElement).offsetTop - 16, behavior: 'smooth' });
         return;
       }
     }
+    
+    // Fallback search
     const kanaIndex = kanaRows.indexOf(kana);
     for (let i = kanaIndex + 1; i < kanaRows.length; i++) {
       const fallbackChars = kanaRanges[kanaRows[i]] || [];
       for (const item of Array.from(items)) {
         const name = item.getAttribute('data-product-name') || '';
-        if (fallbackChars.some(c => name.startsWith(c))) {
-          item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const phoneticFirst = getPhoneticFirstChar(name);
+        if (fallbackChars.some(c => name.startsWith(c) || phoneticFirst === c)) {
+          const container = productListRef.current;
+          container.scrollTo({ top: (item as HTMLElement).offsetTop - 16, behavior: 'smooth' });
           return;
         }
       }
@@ -436,7 +514,7 @@ export default function TenantInventory() {
             </div>
 
             {/* 商品リスト本体 */}
-            <div ref={productListRef} className="space-y-3 flex-1 overflow-y-auto pr-1 px-4 py-4 custom-scrollbar">
+            <div ref={productListRef} className="relative space-y-3 flex-1 overflow-y-auto pr-1 px-4 py-4 custom-scrollbar">
               {products.map((prod) => {
                 const isStockLoading = actionLoading === `stock-${prod.id}`;
                 const isDeleteLoading = actionLoading === `delete-product-${prod.id}`;
