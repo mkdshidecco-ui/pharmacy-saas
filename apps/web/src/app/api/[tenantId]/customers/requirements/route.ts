@@ -32,10 +32,11 @@ export async function POST(
       // 新しい紐付けを登録
       if (requirements.length > 0) {
         await tx.customerRequirement.createMany({
-          data: requirements.map((req: { productId: string; quantity: number }) => ({
+          data: requirements.map((req: { productId: string; quantity: number }, index: number) => ({
             customerId,
             productId: req.productId,
             quantity: req.quantity, // Float対応
+            sortOrder: index,
           })),
         });
       }

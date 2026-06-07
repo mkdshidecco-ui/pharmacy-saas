@@ -90,11 +90,32 @@ export default function TenantSettings() {
     return `/webhook/${tenantId}`;
   };
 
-  const handleCopyWebhook = () => {
+  const handleCopyWebhook = async () => {
     const url = getWebhookUrl();
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // フォールバック: execCommand を使用
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+      // 最終手段: promptでURLを表示
+      prompt('以下のURLをコピーしてください:', url);
+    }
   };
 
   if (loading && !settings) {

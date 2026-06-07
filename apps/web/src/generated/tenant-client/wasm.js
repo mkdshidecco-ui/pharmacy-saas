@@ -153,6 +153,7 @@ exports.Prisma.CustomerRequirementScalarFieldEnum = {
   customerId: 'customerId',
   productId: 'productId',
   quantity: 'quantity',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

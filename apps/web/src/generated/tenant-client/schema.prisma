@@ -59,6 +59,7 @@ model CustomerRequirement {
   customerId String
   productId  String
   quantity   Float // 希望数量（小数対応）
+  sortOrder  Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)

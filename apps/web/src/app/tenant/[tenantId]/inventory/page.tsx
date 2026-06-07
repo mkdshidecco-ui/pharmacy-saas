@@ -354,6 +354,44 @@ export default function TenantInventory() {
     return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
   };
 
+  // あいうえおインデックス
+  const kanaRows = ['あ','か','さ','た','な','は','ま','や','ら','わ'];
+  const kanaRanges: Record<string, string[]> = {
+    'あ': ['あ','い','う','え','お'],
+    'か': ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご'],
+    'さ': ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ'],
+    'た': ['た','ち','つ','て','と','だ','ぢ','づ','で','ど'],
+    'な': ['な','に','ぬ','ね','の'],
+    'は': ['は','ひ','ふ','へ','ほ','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
+    'ま': ['ま','み','む','め','も'],
+    'や': ['や','ゆ','よ'],
+    'ら': ['ら','り','る','れ','ろ'],
+    'わ': ['わ','ゐ','ゑ','を','ん'],
+  };
+  const productListRef = useRef<HTMLDivElement>(null);
+  const scrollToKana = (kana: string) => {
+    if (!productListRef.current) return;
+    const chars = kanaRanges[kana] || [kana];
+    const items = productListRef.current.querySelectorAll('[data-product-name]');
+    for (const item of Array.from(items)) {
+      const name = item.getAttribute('data-product-name') || '';
+      if (chars.some(c => name.startsWith(c))) {
+        item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    const kanaIndex = kanaRows.indexOf(kana);
+    for (let i = kanaIndex + 1; i < kanaRows.length; i++) {
+      const fallbackChars = kanaRanges[kanaRows[i]] || [];
+      for (const item of Array.from(items)) {
+        const name = item.getAttribute('data-product-name') || '';
+        if (fallbackChars.some(c => name.startsWith(c))) {
+          item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+      }
+    }
+  };
   if (loading && products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-100">
@@ -366,9 +404,8 @@ export default function TenantInventory() {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 商品一覧 */}
-        <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+        <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 px-6 pt-6 pb-4">
             <h3 className="font-bold text-slate-100 text-lg flex items-center gap-2">
               <ShoppingBag className="w-5 h-5 text-indigo-400" />
               商品在庫マスター（小数・マイナス対応）
@@ -382,63 +419,81 @@ export default function TenantInventory() {
             </button>
           </div>
 
-          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-            {products.map((prod) => {
-              const isStockLoading = actionLoading === `stock-${prod.id}`;
-              const isDeleteLoading = actionLoading === `delete-product-${prod.id}`;
-              return (
-                <div key={prod.id} className="bg-slate-950/40 border border-slate-850 hover:border-slate-700 transition-all rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-slate-200 text-base">{prod.name}</h4>
-                    <p className="text-[10px] text-slate-500">ID: {prod.id} {prod.unit ? `[単位: ${prod.unit}]` : ''}</p>
-                  </div>
+          {/* あいうえおインデックス + 商品リスト */}
+          <div className="flex" style={{ maxHeight: '60vh' }}>
+            {/* あいうえお縦インデックス */}
+            <div className="flex flex-col justify-around items-center py-3 px-1.5 border-r border-slate-800/60 select-none shrink-0">
+              {kanaRows.map(kana => (
+                <button
+                  key={kana}
+                  onClick={() => scrollToKana(kana)}
+                  className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 w-6 h-6 flex items-center justify-center rounded transition-colors cursor-pointer"
+                  title={`${kana}行へ`}
+                >
+                  {kana}
+                </button>
+              ))}
+            </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <label className="text-xs text-slate-400 font-medium">現在庫:</label>
-                      <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => handleUpdateStock(prod.id, prod.currentStock - 1)}
-                          disabled={!!actionLoading}
-                          className="px-3 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-sm font-bold disabled:opacity-50 cursor-pointer"
-                        >
-                          -1
-                        </button>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={prod.currentStock}
-                          onChange={(e) => handleUpdateStock(prod.id, parseFloat(e.target.value) || 0)}
-                          disabled={!!actionLoading}
-                          className="w-20 bg-transparent text-center border-none text-sm font-semibold focus:outline-none text-white"
-                        />
-                        <button
-                          onClick={() => handleUpdateStock(prod.id, prod.currentStock + 1)}
-                          disabled={!!actionLoading}
-                          className="px-3 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-sm font-bold disabled:opacity-50 cursor-pointer"
-                        >
-                          +1
-                        </button>
-                      </div>
-                      {isStockLoading && <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />}
+            {/* 商品リスト本体 */}
+            <div ref={productListRef} className="space-y-3 flex-1 overflow-y-auto pr-1 px-4 py-4 custom-scrollbar">
+              {products.map((prod) => {
+                const isStockLoading = actionLoading === `stock-${prod.id}`;
+                const isDeleteLoading = actionLoading === `delete-product-${prod.id}`;
+                return (
+                  <div key={prod.id} data-product-name={prod.name} className="bg-slate-950/40 border border-slate-850 hover:border-slate-700 transition-all rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-slate-200 text-base">{prod.name}</h4>
+                      <p className="text-[10px] text-slate-500">ID: {prod.id} {prod.unit ? `[単位: ${prod.unit}]` : ''}</p>
                     </div>
 
-                    <button
-                      onClick={() => handleDeleteProduct(prod.id)}
-                      disabled={!!actionLoading}
-                      className="bg-slate-800 hover:bg-rose-955/40 border border-slate-750 hover:border-rose-900 text-slate-400 hover:text-rose-400 p-2 rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
-                      title="商品削除"
-                    >
-                      {isDeleteLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </button>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs text-slate-400 font-medium">現在庫:</label>
+                        <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => handleUpdateStock(prod.id, prod.currentStock - 1)}
+                            disabled={!!actionLoading}
+                            className="px-3 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-sm font-bold disabled:opacity-50 cursor-pointer"
+                          >
+                            -1
+                          </button>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={prod.currentStock}
+                            onChange={(e) => handleUpdateStock(prod.id, parseFloat(e.target.value) || 0)}
+                            disabled={!!actionLoading}
+                            className="w-20 bg-transparent text-center border-none text-sm font-semibold focus:outline-none text-white"
+                          />
+                          <button
+                            onClick={() => handleUpdateStock(prod.id, prod.currentStock + 1)}
+                            disabled={!!actionLoading}
+                            className="px-3 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-sm font-bold disabled:opacity-50 cursor-pointer"
+                          >
+                            +1
+                          </button>
+                        </div>
+                        {isStockLoading && <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />}
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteProduct(prod.id)}
+                        disabled={!!actionLoading}
+                        className="bg-slate-800 hover:bg-rose-955/40 border border-slate-750 hover:border-rose-900 text-slate-400 hover:text-rose-400 p-2 rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                        title="商品削除"
+                      >
+                        {isDeleteLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 

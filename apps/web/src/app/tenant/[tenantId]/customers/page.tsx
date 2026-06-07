@@ -14,7 +14,8 @@ import {
   RefreshCw,
   FileText,
   Save,
-  ChevronRight
+  ChevronRight,
+  GripVertical
 } from 'lucide-react';
 import { formatFloat } from '@/lib/utils';
 
@@ -46,6 +47,69 @@ export default function TenantCustomers() {
   const [csvMessage, setCsvMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string; details?: string[] } | null>(null);
   const [isDragOverCustomer, setIsDragOverCustomer] = useState(false);
   const customerFileRef = useRef<HTMLInputElement>(null);
+
+  // 医薬品の並び替え用ドラッグ＆ドロップ
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const touchTimeoutRef = useRef<any>(null);
+  const [isTouchDragging, setIsTouchDragging] = useState(false);
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOverReq = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    const items = [...selectedCustomerReqs];
+    const draggedItem = items[draggedIndex];
+    items.splice(draggedIndex, 1);
+    items.splice(index, 0, draggedItem);
+    setDraggedIndex(index);
+    setSelectedCustomerReqs(items);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  const handleTouchStart = (index: number) => {
+    touchTimeoutRef.current = setTimeout(() => {
+      setIsTouchDragging(true);
+      setDraggedIndex(index);
+    }, 400); // 400ms long press to start dragging
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isTouchDragging || draggedIndex === null) {
+      clearTimeout(touchTimeoutRef.current);
+      return;
+    }
+    // Prevent default scroll during dragging
+    if (e.cancelable) e.preventDefault();
+
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!element) return;
+
+    const itemEl = element.closest('[data-drag-index]');
+    if (itemEl) {
+      const overIndex = parseInt(itemEl.getAttribute('data-drag-index') || '', 10);
+      if (!isNaN(overIndex) && overIndex !== draggedIndex) {
+        const items = [...selectedCustomerReqs];
+        const draggedItem = items[draggedIndex];
+        items.splice(draggedIndex, 1);
+        items.splice(overIndex, 0, draggedItem);
+        setDraggedIndex(overIndex);
+        setSelectedCustomerReqs(items);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(touchTimeoutRef.current);
+    setIsTouchDragging(false);
+    setDraggedIndex(null);
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -334,10 +398,54 @@ export default function TenantCustomers() {
     document.body.removeChild(link);
   };
 
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  // あいうえおインデックス
+  const kanaRows = ['あ','か','さ','た','な','は','ま','や','ら','わ'];
+  const kanaRanges: Record<string, string[]> = {
+    'あ': ['あ','い','う','え','お'],
+    'か': ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご'],
+    'さ': ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ'],
+    'た': ['た','ち','つ','て','と','だ','ぢ','づ','で','ど'],
+    'な': ['な','に','ぬ','ね','の'],
+    'は': ['は','ひ','ふ','へ','ほ','ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
+    'ま': ['ま','み','む','め','も'],
+    'や': ['や','ゆ','よ'],
+    'ら': ['ら','り','る','れ','ろ'],
+    'わ': ['わ','ゐ','ゑ','を','ん'],
+  };
+
+  const customerListRef = useRef<HTMLDivElement>(null);
+
+  const scrollToKana = (kana: string) => {
+    if (!customerListRef.current) return;
+    const chars = kanaRanges[kana] || [kana];
+    const items = customerListRef.current.querySelectorAll('[data-customer-name]');
+    for (const item of Array.from(items)) {
+      const name = item.getAttribute('data-customer-name') || '';
+      // ひらがな・カタカナ・ローマ字の先頭文字が該当行ならスクロール
+      if (chars.some(c => name.startsWith(c))) {
+        item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+    // 見つからなければ、その音以降の最初に一致するものを探す
+    const kanaIndex = kanaRows.indexOf(kana);
+    for (let i = kanaIndex + 1; i < kanaRows.length; i++) {
+      const fallbackChars = kanaRanges[kanaRows[i]] || [];
+      for (const item of Array.from(items)) {
+        const name = item.getAttribute('data-customer-name') || '';
+        if (fallbackChars.some(c => name.startsWith(c))) {
+          item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+      }
+    }
   };
 
   if (loading && customers.length === 0) {
@@ -362,6 +470,7 @@ export default function TenantCustomers() {
           左カラム：顧客一覧（独立スクロール）
           ============================== */}
       <div className="lg:col-span-2 bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl shadow-xl flex flex-col min-h-0 h-full">
+        {/* あいうえおインデックス（縦） */}
 
         {/* ヘッダー（固定） */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 px-6 pt-6 pb-4 flex-shrink-0">
@@ -378,72 +487,90 @@ export default function TenantCustomers() {
           </button>
         </div>
 
-        {/* 顧客リスト（独立スクロール） */}
-        <div className="overflow-y-auto custom-scrollbar flex-1 px-6 pt-4 pb-6 space-y-3">
-          {customers.map((cust) => {
-            const isSelected = selectedCustomerId === cust.id;
-            const isDeleteLoading = actionLoading === `delete-customer-${cust.id}`;
-            return (
-              <div
-                key={cust.id}
-                onClick={() => selectCustomerForReqs(cust)}
-                className={`border rounded-xl p-4 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:border-slate-700 ${
-                  isSelected
-                    ? 'bg-slate-900/80 border-indigo-500 ring-1 ring-indigo-500'
-                    : 'bg-slate-950/40 border-slate-850'
-                }`}
+        {/* 顧客リスト（あいうえおインデックス + 独立スクロール） */}
+        <div className="flex flex-1 min-h-0">
+          {/* あいうえおインデックス縦バー */}
+          <div className="flex flex-col justify-around items-center py-3 px-1.5 border-r border-slate-800/60 select-none shrink-0">
+            {kanaRows.map(kana => (
+              <button
+                key={kana}
+                onClick={() => scrollToKana(kana)}
+                className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 w-6 h-6 flex items-center justify-center rounded transition-colors cursor-pointer"
+                title={`${kana}行へ`}
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-slate-100 text-base">{cust.name}</h4>
-                    {cust.visitInterval === 0 ? (
-                      <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 font-bold">
-                        来店不要（非アクティブ）
-                      </span>
-                    ) : (
-                      <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">
-                        予定日: {formatDate(cust.nextVisitDate)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-slate-400">
-                    <div>周期: <span className="text-slate-200 font-semibold">{cust.visitInterval} 日</span></div>
-                    {cust.lastVisitDate && (
-                      <div>最終来店: <span className="text-slate-200 font-semibold">{formatDate(cust.lastVisitDate)}</span></div>
-                    )}
+                {kana}
+              </button>
+            ))}
+          </div>
+
+          {/* 顧客リスト本体 */}
+          <div ref={customerListRef} className="overflow-y-auto custom-scrollbar flex-1 px-4 pt-4 pb-6 space-y-3">
+            {customers.map((cust) => {
+              const isSelected = selectedCustomerId === cust.id;
+              const isDeleteLoading = actionLoading === `delete-customer-${cust.id}`;
+              return (
+                <div
+                  key={cust.id}
+                  data-customer-name={cust.name}
+                  onClick={() => selectCustomerForReqs(cust)}
+                  className={`border rounded-xl p-4 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:border-slate-700 ${
+                    isSelected
+                      ? 'bg-slate-900/80 border-indigo-500 ring-1 ring-indigo-500'
+                      : 'bg-slate-950/40 border-slate-850'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-slate-100 text-base">{cust.name}</h4>
+                      {cust.visitInterval === 0 ? (
+                        <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 font-bold">
+                          来店不要（非アクティブ）
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30">
+                          予定日: {formatDate(cust.nextVisitDate)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-slate-400">
+                      <div>周期: <span className="text-slate-200 font-semibold">{cust.visitInterval} 日</span></div>
+                      {cust.lastVisitDate && (
+                        <div>最終来店: <span className="text-slate-200 font-semibold">{formatDate(cust.lastVisitDate)}</span></div>
+                      )}
+                    </div>
+
+                    {/* 希望商品のプレビュー */}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {cust.requirements.map((req: any, rIdx: number) => (
+                        <span key={rIdx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-900 border border-slate-800 text-slate-300 text-[10px] rounded">
+                          {req.product.name}
+                          <span className="text-indigo-400 font-bold">x{formatFloat(req.quantity)}</span>
+                        </span>
+                      ))}
+                      {cust.requirements.length === 0 && (
+                        <span className="text-slate-500 text-[10px] italic">希望商品の登録なし</span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* 希望商品のプレビュー */}
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {cust.requirements.map((req: any, rIdx: number) => (
-                      <span key={rIdx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-900 border border-slate-800 text-slate-300 text-[10px] rounded">
-                        {req.product.name}
-                        <span className="text-indigo-400 font-bold">x{formatFloat(req.quantity)}</span>
-                      </span>
-                    ))}
-                    {cust.requirements.length === 0 && (
-                      <span className="text-slate-500 text-[10px] italic">希望商品の登録なし</span>
-                    )}
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(cust.id); }}
+                      disabled={!!actionLoading}
+                      className="bg-slate-850 hover:bg-rose-955/40 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 p-2 rounded-lg transition-all cursor-pointer"
+                    >
+                      {isDeleteLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                    <ChevronRight className="w-4 h-4 text-slate-600" />
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 self-end sm:self-center">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(cust.id); }}
-                    disabled={!!actionLoading}
-                    className="bg-slate-850 hover:bg-rose-955/40 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 p-2 rounded-lg transition-all cursor-pointer"
-                  >
-                    {isDeleteLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                  <ChevronRight className="w-4 h-4 text-slate-600" />
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -522,12 +649,31 @@ export default function TenantCustomers() {
                 <p className="text-slate-500 text-xs italic">希望商品は現在ありません。</p>
               ) : (
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                  {selectedCustomerReqs.map((req) => {
+                  {selectedCustomerReqs.map((req, index) => {
                     const prod = products.find(p => p.id === req.productId);
+                    const isDraggingThis = draggedIndex === index;
                     return (
-                      <div key={req.productId} className="bg-slate-950/50 border border-slate-850 p-2.5 rounded-lg flex items-center justify-between gap-3 text-xs">
-                        <span className="font-semibold text-slate-200 truncate flex-1">{prod?.name || '不明な商品'}</span>
-                        <div className="flex items-center gap-2">
+                      <div
+                        key={req.productId}
+                        data-drag-index={index}
+                        draggable="true"
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={(e) => handleDragOverReq(e, index)}
+                        onDragEnd={handleDragEnd}
+                        onTouchStart={() => handleTouchStart(index)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        className={`bg-slate-950/50 border border-slate-850 p-2.5 rounded-lg flex items-center justify-between gap-3 text-xs select-none ${
+                          isDraggingThis ? 'opacity-40 border-indigo-500 scale-[0.98]' : 'hover:border-slate-750'
+                        } transition-all duration-150`}
+                      >
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <div className="text-slate-500 hover:text-slate-350 cursor-grab active:cursor-grabbing shrink-0">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="font-semibold text-slate-200 truncate">{prod?.name || '不明な商品'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
                           <input
                             type="number"
                             step="0.01"

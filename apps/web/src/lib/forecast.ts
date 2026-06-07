@@ -177,6 +177,7 @@ export async function getCalendarVisits(
     include: {
       requirements: {
         include: { product: true },
+        orderBy: { sortOrder: 'asc' },
       },
     },
   });

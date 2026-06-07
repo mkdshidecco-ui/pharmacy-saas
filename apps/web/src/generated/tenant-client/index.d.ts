@@ -4579,10 +4579,12 @@ export namespace Prisma {
 
   export type CustomerRequirementAvgAggregateOutputType = {
     quantity: number | null
+    sortOrder: number | null
   }
 
   export type CustomerRequirementSumAggregateOutputType = {
     quantity: number | null
+    sortOrder: number | null
   }
 
   export type CustomerRequirementMinAggregateOutputType = {
@@ -4590,6 +4592,7 @@ export namespace Prisma {
     customerId: string | null
     productId: string | null
     quantity: number | null
+    sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4599,6 +4602,7 @@ export namespace Prisma {
     customerId: string | null
     productId: string | null
     quantity: number | null
+    sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4608,6 +4612,7 @@ export namespace Prisma {
     customerId: number
     productId: number
     quantity: number
+    sortOrder: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4616,10 +4621,12 @@ export namespace Prisma {
 
   export type CustomerRequirementAvgAggregateInputType = {
     quantity?: true
+    sortOrder?: true
   }
 
   export type CustomerRequirementSumAggregateInputType = {
     quantity?: true
+    sortOrder?: true
   }
 
   export type CustomerRequirementMinAggregateInputType = {
@@ -4627,6 +4634,7 @@ export namespace Prisma {
     customerId?: true
     productId?: true
     quantity?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4636,6 +4644,7 @@ export namespace Prisma {
     customerId?: true
     productId?: true
     quantity?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4645,6 +4654,7 @@ export namespace Prisma {
     customerId?: true
     productId?: true
     quantity?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4741,6 +4751,7 @@ export namespace Prisma {
     customerId: string
     productId: string
     quantity: number
+    sortOrder: number
     createdAt: Date
     updatedAt: Date
     _count: CustomerRequirementCountAggregateOutputType | null
@@ -4769,6 +4780,7 @@ export namespace Prisma {
     customerId?: boolean
     productId?: boolean
     quantity?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -4780,6 +4792,7 @@ export namespace Prisma {
     customerId?: boolean
     productId?: boolean
     quantity?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -4791,6 +4804,7 @@ export namespace Prisma {
     customerId?: boolean
     productId?: boolean
     quantity?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -4815,6 +4829,7 @@ export namespace Prisma {
       customerId: string
       productId: string
       quantity: number
+      sortOrder: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["customerRequirement"]>
@@ -5216,6 +5231,7 @@ export namespace Prisma {
     readonly customerId: FieldRef<"CustomerRequirement", 'String'>
     readonly productId: FieldRef<"CustomerRequirement", 'String'>
     readonly quantity: FieldRef<"CustomerRequirement", 'Float'>
+    readonly sortOrder: FieldRef<"CustomerRequirement", 'Int'>
     readonly createdAt: FieldRef<"CustomerRequirement", 'DateTime'>
     readonly updatedAt: FieldRef<"CustomerRequirement", 'DateTime'>
   }
@@ -9472,6 +9488,7 @@ export namespace Prisma {
     customerId: 'customerId',
     productId: 'productId',
     quantity: 'quantity',
+    sortOrder: 'sortOrder',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -9787,6 +9804,7 @@ export namespace Prisma {
     customerId?: StringFilter<"CustomerRequirement"> | string
     productId?: StringFilter<"CustomerRequirement"> | string
     quantity?: FloatFilter<"CustomerRequirement"> | number
+    sortOrder?: IntFilter<"CustomerRequirement"> | number
     createdAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
     updatedAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
     product?: XOR<ProductRelationFilter, ProductWhereInput>
@@ -9798,6 +9816,7 @@ export namespace Prisma {
     customerId?: SortOrder
     productId?: SortOrder
     quantity?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     product?: ProductOrderByWithRelationInput
@@ -9813,6 +9832,7 @@ export namespace Prisma {
     customerId?: StringFilter<"CustomerRequirement"> | string
     productId?: StringFilter<"CustomerRequirement"> | string
     quantity?: FloatFilter<"CustomerRequirement"> | number
+    sortOrder?: IntFilter<"CustomerRequirement"> | number
     createdAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
     updatedAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
     product?: XOR<ProductRelationFilter, ProductWhereInput>
@@ -9824,6 +9844,7 @@ export namespace Prisma {
     customerId?: SortOrder
     productId?: SortOrder
     quantity?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: CustomerRequirementCountOrderByAggregateInput
@@ -9841,6 +9862,7 @@ export namespace Prisma {
     customerId?: StringWithAggregatesFilter<"CustomerRequirement"> | string
     productId?: StringWithAggregatesFilter<"CustomerRequirement"> | string
     quantity?: FloatWithAggregatesFilter<"CustomerRequirement"> | number
+    sortOrder?: IntWithAggregatesFilter<"CustomerRequirement"> | number
     createdAt?: DateTimeWithAggregatesFilter<"CustomerRequirement"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"CustomerRequirement"> | Date | string
   }
@@ -10312,6 +10334,7 @@ export namespace Prisma {
   export type CustomerRequirementCreateInput = {
     id?: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     product: ProductCreateNestedOneWithoutRequirementsInput
@@ -10323,6 +10346,7 @@ export namespace Prisma {
     customerId: string
     productId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -10330,6 +10354,7 @@ export namespace Prisma {
   export type CustomerRequirementUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutRequirementsNestedInput
@@ -10341,6 +10366,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10350,6 +10376,7 @@ export namespace Prisma {
     customerId: string
     productId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -10357,6 +10384,7 @@ export namespace Prisma {
   export type CustomerRequirementUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10366,6 +10394,7 @@ export namespace Prisma {
     customerId?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -10944,12 +10973,14 @@ export namespace Prisma {
     customerId?: SortOrder
     productId?: SortOrder
     quantity?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type CustomerRequirementAvgOrderByAggregateInput = {
     quantity?: SortOrder
+    sortOrder?: SortOrder
   }
 
   export type CustomerRequirementMaxOrderByAggregateInput = {
@@ -10957,6 +10988,7 @@ export namespace Prisma {
     customerId?: SortOrder
     productId?: SortOrder
     quantity?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -10966,12 +10998,14 @@ export namespace Prisma {
     customerId?: SortOrder
     productId?: SortOrder
     quantity?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type CustomerRequirementSumOrderByAggregateInput = {
     quantity?: SortOrder
+    sortOrder?: SortOrder
   }
 
   export type PurchaseRecordCountOrderByAggregateInput = {
@@ -11706,6 +11740,7 @@ export namespace Prisma {
   export type CustomerRequirementCreateWithoutCustomerInput = {
     id?: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     product: ProductCreateNestedOneWithoutRequirementsInput
@@ -11715,6 +11750,7 @@ export namespace Prisma {
     id?: string
     productId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11775,6 +11811,7 @@ export namespace Prisma {
     customerId?: StringFilter<"CustomerRequirement"> | string
     productId?: StringFilter<"CustomerRequirement"> | string
     quantity?: FloatFilter<"CustomerRequirement"> | number
+    sortOrder?: IntFilter<"CustomerRequirement"> | number
     createdAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
     updatedAt?: DateTimeFilter<"CustomerRequirement"> | Date | string
   }
@@ -11808,6 +11845,7 @@ export namespace Prisma {
   export type CustomerRequirementCreateWithoutProductInput = {
     id?: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutRequirementsInput
@@ -11817,6 +11855,7 @@ export namespace Prisma {
     id?: string
     customerId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12465,6 +12504,7 @@ export namespace Prisma {
     id?: string
     productId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12478,6 +12518,7 @@ export namespace Prisma {
   export type CustomerRequirementUpdateWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutRequirementsNestedInput
@@ -12487,6 +12528,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12495,6 +12537,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     productId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12523,6 +12566,7 @@ export namespace Prisma {
     id?: string
     customerId: string
     quantity: number
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -12553,6 +12597,7 @@ export namespace Prisma {
   export type CustomerRequirementUpdateWithoutProductInput = {
     id?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutRequirementsNestedInput
@@ -12562,6 +12607,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12570,6 +12616,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: StringFieldUpdateOperationsInput | string
     quantity?: FloatFieldUpdateOperationsInput | number
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

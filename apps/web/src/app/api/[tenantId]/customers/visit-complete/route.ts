@@ -18,11 +18,13 @@ export async function POST(
 
     const {
       customerId,
-      actualItems,
+      actualItems,   // 今回使用量 → 在庫減算・VisitRecord に使用
+      nextItems,     // 次回使用予定量 → CustomerRequirement に保存
       nextVisitInterval,
     }: {
       customerId: string;
       actualItems?: { productId: string; quantity: number }[];
+      nextItems?: { productId: string; quantity: number }[];
       nextVisitInterval?: number;
     } = await request.json();
 
@@ -53,10 +55,17 @@ export async function POST(
     // 次回予定日の計算
     const newNextVisitDate = calculateNextVisitDate(effectiveInterval, today);
 
-    // 在庫差し引きに使う実売データを確定
+    // 在庫差し引きに使う実売データを確定（actualItems 優先、なければ既存要件）
     const itemsToDeduct = actualItems && actualItems.length > 0
       ? actualItems
       : customer.requirements.map(r => ({ productId: r.productId, quantity: r.quantity }));
+
+    // 次回予定量（nextItems 優先、なければ actualItems、なければ既存要件）
+    const itemsForNextReq = nextItems && nextItems.length > 0
+      ? nextItems
+      : (actualItems && actualItems.length > 0
+        ? actualItems
+        : customer.requirements.map(r => ({ productId: r.productId, quantity: r.quantity })));
 
     // トランザクション処理
     await db.$transaction(async (tx) => {
@@ -70,29 +79,25 @@ export async function POST(
         },
       });
 
-      // 2. 次回予測購入量の更新（actualItemsが渡された場合のみ）
-      if (actualItems && actualItems.length > 0) {
-        for (const item of actualItems) {
-          await tx.customerRequirement.upsert({
-            where: {
-              customerId_productId: {
-                customerId,
-                productId: item.productId,
-              },
-            },
-            update: { quantity: item.quantity },
-            create: {
+      // 2. CustomerRequirement を次回使用予定量で更新
+      //    既存の要件を全削除して新規作成（sortOrder 含む）
+      await tx.customerRequirement.deleteMany({ where: { customerId } });
+      if (itemsForNextReq.length > 0) {
+        await tx.customerRequirement.createMany({
+          data: itemsForNextReq
+            .filter(i => i.quantity > 0)
+            .map((item, index) => ({
               customerId,
               productId: item.productId,
               quantity: item.quantity,
-            },
-          });
-        }
+              sortOrder: index,
+            })),
+        });
       }
 
-      // 3. 在庫を実売数量で差し引き（Float対応）
+      // 3. 在庫を今回使用量で差し引き（Float対応・マイナス在庫許容）
       for (const item of itemsToDeduct) {
-        if (item.quantity !== 0) { // マイナス在庫対応のため、0以外の変動があれば差し引き
+        if (item.quantity !== 0) {
           await tx.product.update({
             where: { id: item.productId },
             data: {

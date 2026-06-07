@@ -23,6 +23,9 @@ export async function GET(
           include: {
             product: true,
           },
+          orderBy: {
+            sortOrder: 'asc',
+          },
         },
       },
       orderBy: {
