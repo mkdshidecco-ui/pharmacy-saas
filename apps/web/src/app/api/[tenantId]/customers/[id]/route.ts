@@ -78,7 +78,7 @@ export async function PUT(
     const customer = await db.customer.update({
       where: { id },
       data: {
-        name,
+        ...(name !== undefined ? { name } : {}),
         visitInterval: updatedVisitInterval,
         lastVisitDate: updatedLastVisitDate,
         nextVisitDate: updatedNextVisitDate,

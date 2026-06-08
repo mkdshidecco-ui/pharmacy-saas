@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Plus,
   Trash2,
-  GripVertical
+  GripVertical,
+  Lock
 } from 'lucide-react';
 import { formatFloat } from '@/lib/utils';
 
@@ -39,6 +40,7 @@ export default function TenantCalendar() {
   const [visitModalCustomer, setVisitModalCustomer] = useState<any | null>(null);
   const [visitActualItems, setVisitActualItems] = useState<{ productId: string; productName: string; usedQty: number; nextQty: number }[]>([]);
   const [visitNextInterval, setVisitNextInterval] = useState<number>(14);
+  const [visitCompletedDate, setVisitCompletedDate] = useState<string>(''); // 来局完了日（YYYY-MM-DD）
   const [allProducts, setAllProducts] = useState<any[]>([]);
   // 追加薬品
   const [addMedProductId, setAddMedProductId] = useState('');
@@ -91,6 +93,12 @@ export default function TenantCalendar() {
 
   // 来店完了モーダルを開く
   const openVisitModal = (visit: any) => {
+    // 完了済みカードはモーダルを開かない
+    if (visit.isCompleted) return;
+
+    // 来局完了日の初期値を「本日」に設定
+    setVisitCompletedDate(todayStr);
+
     setVisitModalCustomer({
       customerId: visit.customerId,
       customerName: visit.customerName,
@@ -233,6 +241,7 @@ export default function TenantCalendar() {
           actualItems: visitActualItems.map(i => ({ productId: i.productId, quantity: i.usedQty })),
           nextItems: visitActualItems.map(i => ({ productId: i.productId, quantity: i.nextQty })),
           nextVisitInterval: Number(visitNextInterval),
+          visitDate: visitCompletedDate || todayStr, // 来局完了日
         }),
       });
       if (res.ok) {
@@ -315,23 +324,15 @@ export default function TenantCalendar() {
     setDragOverDate(null);
   };
 
-  // 来店日の実際の変更処理
+  // 来店日の実際の変更処理（nextVisitDate のみを直接書き換える ＝ 過去実績は動かない）
   const rescheduleVisit = async (visit: any, newDateStr: string) => {
     setActionLoading(`reschedule-${visit.customerId}`);
     try {
-      // lastVisitDate を (新日付 - visitInterval) に設定して nextVisitDate を再計算させる
-      const newDate = new Date(newDateStr + 'T00:00:00Z');
-      const interval = visit.visitInterval || 14;
-      const lastVisit = new Date(newDate);
-      lastVisit.setUTCDate(lastVisit.getUTCDate() - interval);
-      const lastVisitStr = lastVisit.toISOString().split('T')[0];
-
       const res = await fetch(`/api/${tenantId}/customers/${visit.customerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lastVisitDate: lastVisitStr,
-          nextVisitDate: newDateStr,
+          nextVisitDate: newDateStr, // nextVisitDate のみ更新。lastVisitDate は変更しない
         }),
       });
       if (res.ok) {
@@ -500,31 +501,50 @@ export default function TenantCalendar() {
 
               {/* 顧客予定リスト */}
               <div className="flex-grow space-y-1 overflow-y-auto max-h-[80px] pr-0.5 custom-scrollbar">
-                {dayVisits.map((visit: any, vIdx: number) => (
-                  <div
-                    key={vIdx}
-                    draggable="true"
-                    onDragStart={(e) => handleVisitDragStart(e, visit)}
-                    onDragEnd={() => setDragVisit(null)}
-                    onTouchStart={() => handleVisitTouchStart(visit)}
-                    onTouchMove={handleVisitTouchMove}
-                    onTouchEnd={handleVisitTouchEnd}
-                    onClick={() => !isTouchDraggingVisit && openVisitModal(visit)}
-                    className={`bg-slate-900 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850/60 transition-all rounded p-1 text-[10px] cursor-pointer group text-left select-none ${
-                      dragVisit?.customerId === visit.customerId && dragVisit?.visitDate === visit.visitDate ? 'opacity-40' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-0.5">
-                      <GripVertical className="w-2.5 h-2.5 text-slate-600 shrink-0" />
-                      <div className="font-bold text-slate-200 group-hover:text-indigo-300 truncate">{visit.customerName}</div>
-                    </div>
-                    {visit.requirements.length > 0 && (
-                      <div className="text-slate-500 truncate scale-90 origin-left">
-                        {visit.requirements.map((r: any) => `${r.productName}x${formatFloat(r.quantity)}`).join(', ')}
+                {dayVisits.map((visit: any, vIdx: number) => {
+                  const isCompleted = !!visit.isCompleted;
+                  const isDraggingThis = dragVisit?.customerId === visit.customerId && dragVisit?.visitDate === visit.visitDate;
+                  const isTouchActive = isTouchDraggingVisit && touchDragVisitRef.current?.customerId === visit.customerId && touchDragVisitRef.current?.visitDate === visit.visitDate;
+                  return (
+                    <div
+                      key={vIdx}
+                      draggable={!isCompleted}
+                      onDragStart={(e) => !isCompleted && handleVisitDragStart(e, visit)}
+                      onDragEnd={() => setDragVisit(null)}
+                      onTouchStart={() => !isCompleted && handleVisitTouchStart(visit)}
+                      onTouchMove={handleVisitTouchMove}
+                      onTouchEnd={handleVisitTouchEnd}
+                      onClick={() => !isTouchDraggingVisit && openVisitModal(visit)}
+                      className={`border rounded p-1 text-[10px] text-left select-none transition-all ${
+                        isCompleted
+                          ? 'bg-slate-800/40 border-slate-700/50 opacity-60 cursor-default'
+                          : isDraggingThis || isTouchActive
+                          ? 'bg-indigo-900/60 border-yellow-400 ring-1 ring-yellow-400/60 scale-95 shadow-lg cursor-grabbing opacity-70'
+                          : 'bg-slate-900 border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850/60 cursor-grab group'
+                      }`}
+                    >
+                      <div className="flex items-center gap-0.5">
+                        {isCompleted
+                          ? <Lock className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+                          : <GripVertical className="w-2.5 h-2.5 text-slate-600 shrink-0 group-hover:text-indigo-400" />
+                        }
+                        <div className={`font-bold truncate ${
+                          isCompleted ? 'text-slate-500 line-through' : 'text-slate-200 group-hover:text-indigo-300'
+                        }`}>{visit.customerName}</div>
+                        {isCompleted && (
+                          <span className="ml-auto shrink-0 text-[8px] bg-slate-700/80 text-slate-400 px-1 rounded">完了</span>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {visit.requirements.length > 0 && (
+                        <div className={`truncate scale-90 origin-left ${
+                          isCompleted ? 'text-slate-600' : 'text-slate-500'
+                        }`}>
+                          {visit.requirements.map((r: any) => `${r.productName}x${formatFloat(r.quantity)}`).join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -548,6 +568,23 @@ export default function TenantCalendar() {
                 来店処理: {visitModalCustomer.customerName}
               </h3>
               <p className="text-xs text-slate-400 mt-1">今回使用量を確定して在庫を減算。次回予定量を登録します。</p>
+            </div>
+
+            {/* 来局完了日セクション（モーダルヘッダー直下） */}
+            <div className="px-6 py-3 bg-slate-950/40 border-b border-slate-800 flex items-center gap-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">来局完了日</span>
+              <input
+                type="date"
+                value={visitCompletedDate}
+                max={todayStr}
+                onChange={(e) => setVisitCompletedDate(e.target.value)}
+                className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+              />
+              {visitCompletedDate !== todayStr && (
+                <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
+                  過去日付で登録
+                </span>
+              )}
             </div>
 
             <form onSubmit={handleVisitCompleteSubmit}>

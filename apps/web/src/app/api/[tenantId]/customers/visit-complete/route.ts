@@ -18,14 +18,16 @@ export async function POST(
 
     const {
       customerId,
-      actualItems,   // 今回使用量 → 在庫減算・VisitRecord に使用
-      nextItems,     // 次回使用予定量 → CustomerRequirement に保存
+      actualItems,       // 今回使用量 → 在庫減算・VisitRecord に使用
+      nextItems,         // 次回使用予定量 → CustomerRequirement に保存
       nextVisitInterval,
+      visitDate,         // 来局完了日（指定なければ本日）
     }: {
       customerId: string;
       actualItems?: { productId: string; quantity: number }[];
       nextItems?: { productId: string; quantity: number }[];
       nextVisitInterval?: number;
+      visitDate?: string; // YYYY-MM-DD 形式
     } = await request.json();
 
     if (!customerId) {
@@ -50,7 +52,10 @@ export async function POST(
       ? nextVisitInterval
       : customer.visitInterval;
 
-    const today = getBaseDate();
+    // 来局完了日（指定がなければ本日）
+    const today = visitDate
+      ? (() => { const d = new Date(visitDate + 'T00:00:00Z'); d.setUTCHours(0, 0, 0, 0); return d; })()
+      : getBaseDate();
 
     // 次回予定日の計算
     const newNextVisitDate = calculateNextVisitDate(effectiveInterval, today);

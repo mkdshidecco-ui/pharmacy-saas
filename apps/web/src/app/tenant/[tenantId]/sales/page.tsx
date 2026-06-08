@@ -8,7 +8,8 @@ import {
   Download,
   RefreshCw,
   Clock,
-  User
+  User,
+  Trash2
 } from 'lucide-react';
 import { formatFloat } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ export default function TenantSales() {
 
   const [sales, setSales] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchSales = async () => {
     setLoading(true);
@@ -42,6 +44,25 @@ export default function TenantSales() {
       fetchSales();
     }
   }, [tenantId]);
+
+  const handleDeleteSale = async (id: string, customerName: string) => {
+    if (!confirm(`「${customerName}」の来局記録を削除しますか？\n※ 在庫は自動的に払い戻されます。`)) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/${tenantId}/sales/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchSales();
+      } else {
+        const err = await res.json();
+        alert(`削除に失敗しました: ${err.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('削除に失敗しました。');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -130,11 +151,12 @@ export default function TenantSales() {
                 <th className="py-4 px-4">来店日時</th>
                 <th className="py-4 px-4">顧客名</th>
                 <th className="py-4 px-4">購入商品明細</th>
+                <th className="py-4 px-4 text-right">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 text-sm">
               {sales.map((sale, index) => (
-                <tr key={index} className="hover:bg-slate-900/35 transition-colors">
+                <tr key={index} className="hover:bg-slate-900/35 transition-colors group">
                   <td className="py-4 px-4 text-slate-300 font-medium">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-slate-500" />
@@ -160,6 +182,17 @@ export default function TenantSales() {
                         ))}
                       </div>
                     )}
+                  </td>
+                  <td className="py-4 px-4 text-right">
+                    <button
+                      onClick={() => handleDeleteSale(sale.id, sale.customer?.name ?? '不明')}
+                      disabled={deletingId === sale.id}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1.5 rounded-lg disabled:opacity-30 cursor-pointer"
+                      title="この来局記録を削除（在庫払い戻しあり）"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      削除
+                    </button>
                   </td>
                 </tr>
               ))}

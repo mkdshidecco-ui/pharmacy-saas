@@ -166,6 +166,8 @@ export interface CalendarVisit {
   customerName: string;
   visitDate: string; // YYYY-MM-DD
   visitInterval: number;
+  isCompleted: boolean;      // true = 来局実績, false = 来局予定
+  visitRecordId?: string;    // 来局実績のID（削除やリンク用）
   requirements: { productId: string; productName: string; quantity: number }[];
 }
 
@@ -174,6 +176,65 @@ export async function getCalendarVisits(
   startDate: Date,
   endDate: Date
 ): Promise<CalendarVisit[]> {
+  const start = new Date(startDate);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(endDate);
+  end.setUTCHours(23, 59, 59, 999);
+
+  // --- ① 過去の来局実績（VisitRecord）を取得 ---
+  // visitInterval=0（一般顧客）は除外するため、customer.visitInterval > 0 のものだけ取得
+  const visitRecords = await db.visitRecord.findMany({
+    where: {
+      visitedAt: { gte: start, lte: end },
+      customer: { visitInterval: { gt: 0 } },
+    },
+    include: {
+      customer: {
+        include: {
+          requirements: {
+            include: { product: true },
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      },
+      items: { include: { product: true } },
+    },
+    orderBy: { visitedAt: 'asc' },
+  });
+
+  const visits: CalendarVisit[] = [];
+
+  // 実績をカレンダーに追加（isCompleted: true）
+  for (const record of visitRecords) {
+    const customer = record.customer;
+    if (!isActiveCustomer(customer.visitInterval)) continue;
+    const dateStr = record.visitedAt.toISOString().split('T')[0];
+    visits.push({
+      customerId: customer.id,
+      customerName: customer.name,
+      visitDate: dateStr,
+      visitInterval: customer.visitInterval,
+      isCompleted: true,
+      visitRecordId: record.id,
+      // 実績カードには来局時の実際の商品を表示（存在すればそれ、なければrequirements）
+      requirements: record.items.length > 0
+        ? record.items.map((i) => ({
+            productId: i.productId,
+            productName: i.product?.name ?? '不明',
+            quantity: i.quantity,
+          }))
+        : customer.requirements.map((r) => ({
+            productId: r.productId,
+            productName: r.product.name,
+            quantity: r.quantity,
+          })),
+    });
+  }
+
+  // 実績日付を Set に格納（予定との重複を防ぐ）
+  const completedKeys = new Set(visitRecords.map(r => `${r.customerId}-${r.visitedAt.toISOString().split('T')[0]}`));
+
+  // --- ② 未来の予定を nextVisitDate 起点で計算 ---
   const customers = await db.customer.findMany({
     include: {
       requirements: {
@@ -183,55 +244,38 @@ export async function getCalendarVisits(
     },
   });
 
-  const visits: CalendarVisit[] = [];
-  const start = new Date(startDate);
-  start.setUTCHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setUTCHours(23, 59, 59, 999);
-
   for (const customer of customers) {
     const interval = customer.visitInterval;
-
-    // visitInterval = 0 は来店不要 → スキップ
     if (!isActiveCustomer(interval)) continue;
 
-    // 来店日の繰り返し計算
-    let tempDate: Date;
-    if (customer.lastVisitDate) {
-      tempDate = new Date(customer.lastVisitDate);
-      tempDate.setUTCHours(0, 0, 0, 0);
-      // start より前まで進める
-      while (tempDate < start) {
-        tempDate = new Date(tempDate);
-        tempDate.setDate(tempDate.getDate() + interval);
-      }
-    } else {
-      tempDate = new Date(customer.nextVisitDate);
-      tempDate.setUTCHours(0, 0, 0, 0);
-      // 過去の場合は最初の未来日付まで進める
-      if (tempDate < start) {
-        // startまで巻き上げる
-        while (tempDate < start) {
-          tempDate = new Date(tempDate);
-          tempDate.setDate(tempDate.getDate() + interval);
-        }
-      }
+    // nextVisitDate を起点として、表示期間内の予定日を列挙
+    let tempDate = new Date(customer.nextVisitDate);
+    tempDate.setUTCHours(0, 0, 0, 0);
+
+    // nextVisitDate が start より前の場合、start 以降まで進める
+    while (tempDate < start) {
+      tempDate = new Date(tempDate);
+      tempDate.setDate(tempDate.getDate() + interval);
     }
 
-    // 表示期間内の全来店日を追加
     while (tempDate <= end) {
       const dateStr = tempDate.toISOString().split('T')[0];
-      visits.push({
-        customerId: customer.id,
-        customerName: customer.name,
-        visitDate: dateStr,
-        visitInterval: interval,
-        requirements: customer.requirements.map((r) => ({
-          productId: r.productId,
-          productName: r.product.name,
-          quantity: r.quantity,
-        })),
-      });
+      const key = `${customer.id}-${dateStr}`;
+      // 同じ日に実績がある場合は予定カードを出さない
+      if (!completedKeys.has(key)) {
+        visits.push({
+          customerId: customer.id,
+          customerName: customer.name,
+          visitDate: dateStr,
+          visitInterval: interval,
+          isCompleted: false,
+          requirements: customer.requirements.map((r) => ({
+            productId: r.productId,
+            productName: r.product.name,
+            quantity: r.quantity,
+          })),
+        });
+      }
       tempDate = new Date(tempDate);
       tempDate.setDate(tempDate.getDate() + interval);
     }
