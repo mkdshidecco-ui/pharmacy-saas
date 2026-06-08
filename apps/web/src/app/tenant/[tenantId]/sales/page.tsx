@@ -187,7 +187,7 @@ export default function TenantSales() {
                     <button
                       onClick={() => handleDeleteSale(sale.id, sale.customer?.name ?? '不明')}
                       disabled={deletingId === sale.id}
-                      className="inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1.5 rounded-lg disabled:opacity-30 cursor-pointer transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 px-3 py-2 rounded-lg shadow-md disabled:opacity-50 cursor-pointer transition-all active:scale-95"
                       title="この来局記録を削除（在庫払い戻しあり）"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

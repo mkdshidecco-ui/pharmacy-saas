@@ -26,12 +26,12 @@ export async function GET(
     today.setUTCHours(0, 0, 0, 0);
     const baseDayOfWeek = today.getUTCDay();
     
-    // その週の日曜日（UTC）から2週前を起点
+    // その週の日曜日（UTC）から4週前を起点
     const baseSunday = new Date(today);
-    baseSunday.setUTCDate(today.getUTCDate() - baseDayOfWeek - 14 + weekOffset * 7);
+    baseSunday.setUTCDate(today.getUTCDate() - baseDayOfWeek - 28 + weekOffset * 7);
     
     const endDate = new Date(baseSunday);
-    endDate.setUTCDate(baseSunday.getUTCDate() + 34); // 35日間
+    endDate.setUTCDate(baseSunday.getUTCDate() + 111); // 112日間 (16週間)
 
     const db = getTenantDb(tenant.id);
     const visits = await getCalendarVisits(db, baseSunday, endDate);

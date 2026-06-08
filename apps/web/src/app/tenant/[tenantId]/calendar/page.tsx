@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Calendar as CalendarIcon,
@@ -377,10 +377,13 @@ export default function TenantCalendar() {
   };
 
   const getCalendarDays = () => {
-    if (!calendarData?.startDate) return [];
+    if (!calendarData?.startDate || !calendarData?.endDate) return [];
     const start = new Date(calendarData.startDate);
+    const end = new Date(calendarData.endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive
     const days = [];
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < diffDays; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
       days.push(d);
@@ -437,7 +440,15 @@ export default function TenantCalendar() {
           <button onClick={() => setWeekOffset(weekOffset - 1)} className="p-2 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer" title="前の週へ">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button onClick={() => setWeekOffset(0)} className="px-3 py-1.5 hover:bg-slate-900 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer">
+          <button onClick={() => {
+            setWeekOffset(0);
+            setTimeout(() => {
+              const todayEl = document.querySelector(`[data-calendar-date="${todayStr}"]`);
+              if (todayEl) {
+                todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 100);
+          }} className="px-3 py-1.5 hover:bg-slate-900 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer">
             今週に戻る
           </button>
           <button onClick={() => setWeekOffset(weekOffset + 1)} className="p-2 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer" title="次の週へ">
@@ -465,16 +476,16 @@ export default function TenantCalendar() {
       </div>
 
       {/* カレンダーグリッド */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-2 overflow-y-auto custom-scrollbar pr-1 max-h-[calc(100vh-14rem)] pb-10">
         {(() => {
           // Group visits by date for O(1) rendering lookup to avoid performance lag
-          const visitsByDate = calendarData?.visits?.reduce((acc: any, v: any) => {
-            if (!acc[v.visitDate]) {
-              acc[v.visitDate] = [];
-            }
-            acc[v.visitDate].push(v);
-            return acc;
-          }, {}) || {};
+          const visitsByDate = useMemo(() => {
+            return calendarData?.visits?.reduce((acc: any, v: any) => {
+              if (!acc[v.visitDate]) acc[v.visitDate] = [];
+              acc[v.visitDate].push(v);
+              return acc;
+            }, {}) || {};
+          }, [calendarData]);
 
           return calendarDays.map((day, idx) => {
             const dateStr = day.toISOString().split('T')[0];
@@ -533,9 +544,9 @@ export default function TenantCalendar() {
                       onClick={() => !isTouchDraggingVisit && openVisitModal(visit)}
                       className={`border rounded p-1 text-[10px] text-left select-none transition-all ${
                         isCompleted
-                          ? 'bg-slate-800/40 border-slate-700/50 opacity-60 cursor-default'
+                          ? 'bg-slate-900/40 border-slate-800/30 opacity-40 grayscale cursor-default'
                           : isDraggingThis || isTouchActive
-                          ? 'bg-indigo-900/60 border-yellow-400 ring-1 ring-yellow-400/60 scale-95 shadow-lg cursor-grabbing opacity-70'
+                          ? 'bg-indigo-900 border-yellow-400 ring-2 ring-yellow-400/80 scale-95 shadow-2xl cursor-grabbing opacity-90 z-10 relative'
                           : 'bg-slate-900 border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850/60 cursor-grab group'
                       }`}
                     >
