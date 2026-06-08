@@ -393,6 +393,15 @@ export default function TenantCalendar() {
 
   const calendarDays = getCalendarDays();
 
+  // Group visits by date for O(1) rendering lookup to avoid performance lag
+  const visitsByDate = useMemo(() => {
+    return calendarData?.visits?.reduce((acc: any, v: any) => {
+      if (!acc[v.visitDate]) acc[v.visitDate] = [];
+      acc[v.visitDate].push(v);
+      return acc;
+    }, {}) || {};
+  }, [calendarData]);
+
   if (loading && !calendarData) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-100">
@@ -477,17 +486,7 @@ export default function TenantCalendar() {
 
       {/* カレンダーグリッド */}
       <div className="grid grid-cols-7 gap-2 overflow-y-auto custom-scrollbar pr-1 max-h-[calc(100vh-14rem)] pb-10">
-        {(() => {
-          // Group visits by date for O(1) rendering lookup to avoid performance lag
-          const visitsByDate = useMemo(() => {
-            return calendarData?.visits?.reduce((acc: any, v: any) => {
-              if (!acc[v.visitDate]) acc[v.visitDate] = [];
-              acc[v.visitDate].push(v);
-              return acc;
-            }, {}) || {};
-          }, [calendarData]);
-
-          return calendarDays.map((day, idx) => {
+        {calendarDays.map((day, idx) => {
             const dateStr = day.toISOString().split('T')[0];
             const isToday = dateStr === todayStr;
             const isDragTarget = dragOverDate === dateStr;
@@ -575,7 +574,7 @@ export default function TenantCalendar() {
               </div>
             </div>
           );
-        })})()}
+        })}
       </div>
 
       {/* 来店完了モーダル */}
