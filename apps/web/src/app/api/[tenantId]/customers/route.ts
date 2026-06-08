@@ -28,9 +28,10 @@ export async function GET(
           },
         },
       },
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: [
+        { nameKana: 'asc' },
+        { name: 'asc' },
+      ],
     });
     return NextResponse.json(customers);
   } catch (error) {
@@ -51,7 +52,7 @@ export async function POST(
     const tenant = await resolveTenant(tenantId);
     if (!tenant) return NextResponse.json({ error: 'テナントが見つかりません' }, { status: 404 });
 
-    const { name, visitInterval, lastVisitDate } = await request.json();
+    const { name, nameKana, visitInterval, lastVisitDate } = await request.json();
     if (!name || typeof visitInterval !== 'number') {
       return NextResponse.json({ error: 'Missing or invalid parameters' }, { status: 400 });
     }
@@ -63,6 +64,7 @@ export async function POST(
     const customer = await db.customer.create({
       data: {
         name,
+        nameKana: nameKana || '',
         visitInterval,
         lastVisitDate: calculatedLastVisit,
         nextVisitDate: calculatedNextVisit,

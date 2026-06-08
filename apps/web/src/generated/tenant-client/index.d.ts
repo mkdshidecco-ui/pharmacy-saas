@@ -2496,6 +2496,7 @@ export namespace Prisma {
   export type CustomerMinAggregateOutputType = {
     id: string | null
     name: string | null
+    nameKana: string | null
     visitInterval: number | null
     lastVisitDate: Date | null
     nextVisitDate: Date | null
@@ -2506,6 +2507,7 @@ export namespace Prisma {
   export type CustomerMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    nameKana: string | null
     visitInterval: number | null
     lastVisitDate: Date | null
     nextVisitDate: Date | null
@@ -2516,6 +2518,7 @@ export namespace Prisma {
   export type CustomerCountAggregateOutputType = {
     id: number
     name: number
+    nameKana: number
     visitInterval: number
     lastVisitDate: number
     nextVisitDate: number
@@ -2536,6 +2539,7 @@ export namespace Prisma {
   export type CustomerMinAggregateInputType = {
     id?: true
     name?: true
+    nameKana?: true
     visitInterval?: true
     lastVisitDate?: true
     nextVisitDate?: true
@@ -2546,6 +2550,7 @@ export namespace Prisma {
   export type CustomerMaxAggregateInputType = {
     id?: true
     name?: true
+    nameKana?: true
     visitInterval?: true
     lastVisitDate?: true
     nextVisitDate?: true
@@ -2556,6 +2561,7 @@ export namespace Prisma {
   export type CustomerCountAggregateInputType = {
     id?: true
     name?: true
+    nameKana?: true
     visitInterval?: true
     lastVisitDate?: true
     nextVisitDate?: true
@@ -2653,6 +2659,7 @@ export namespace Prisma {
   export type CustomerGroupByOutputType = {
     id: string
     name: string
+    nameKana: string
     visitInterval: number
     lastVisitDate: Date | null
     nextVisitDate: Date
@@ -2682,6 +2689,7 @@ export namespace Prisma {
   export type CustomerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameKana?: boolean
     visitInterval?: boolean
     lastVisitDate?: boolean
     nextVisitDate?: boolean
@@ -2695,6 +2703,7 @@ export namespace Prisma {
   export type CustomerSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    nameKana?: boolean
     visitInterval?: boolean
     lastVisitDate?: boolean
     nextVisitDate?: boolean
@@ -2705,6 +2714,7 @@ export namespace Prisma {
   export type CustomerSelectScalar = {
     id?: boolean
     name?: boolean
+    nameKana?: boolean
     visitInterval?: boolean
     lastVisitDate?: boolean
     nextVisitDate?: boolean
@@ -2728,6 +2738,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      nameKana: string
       visitInterval: number
       lastVisitDate: Date | null
       nextVisitDate: Date
@@ -3130,6 +3141,7 @@ export namespace Prisma {
   interface CustomerFieldRefs {
     readonly id: FieldRef<"Customer", 'String'>
     readonly name: FieldRef<"Customer", 'String'>
+    readonly nameKana: FieldRef<"Customer", 'String'>
     readonly visitInterval: FieldRef<"Customer", 'Int'>
     readonly lastVisitDate: FieldRef<"Customer", 'DateTime'>
     readonly nextVisitDate: FieldRef<"Customer", 'DateTime'>
@@ -9461,6 +9473,7 @@ export namespace Prisma {
   export const CustomerScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    nameKana: 'nameKana',
     visitInterval: 'visitInterval',
     lastVisitDate: 'lastVisitDate',
     nextVisitDate: 'nextVisitDate',
@@ -9661,6 +9674,7 @@ export namespace Prisma {
     NOT?: CustomerWhereInput | CustomerWhereInput[]
     id?: StringFilter<"Customer"> | string
     name?: StringFilter<"Customer"> | string
+    nameKana?: StringFilter<"Customer"> | string
     visitInterval?: IntFilter<"Customer"> | number
     lastVisitDate?: DateTimeNullableFilter<"Customer"> | Date | string | null
     nextVisitDate?: DateTimeFilter<"Customer"> | Date | string
@@ -9673,6 +9687,7 @@ export namespace Prisma {
   export type CustomerOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameKana?: SortOrder
     visitInterval?: SortOrder
     lastVisitDate?: SortOrderInput | SortOrder
     nextVisitDate?: SortOrder
@@ -9688,6 +9703,7 @@ export namespace Prisma {
     OR?: CustomerWhereInput[]
     NOT?: CustomerWhereInput | CustomerWhereInput[]
     name?: StringFilter<"Customer"> | string
+    nameKana?: StringFilter<"Customer"> | string
     visitInterval?: IntFilter<"Customer"> | number
     lastVisitDate?: DateTimeNullableFilter<"Customer"> | Date | string | null
     nextVisitDate?: DateTimeFilter<"Customer"> | Date | string
@@ -9700,6 +9716,7 @@ export namespace Prisma {
   export type CustomerOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    nameKana?: SortOrder
     visitInterval?: SortOrder
     lastVisitDate?: SortOrderInput | SortOrder
     nextVisitDate?: SortOrder
@@ -9718,6 +9735,7 @@ export namespace Prisma {
     NOT?: CustomerScalarWhereWithAggregatesInput | CustomerScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Customer"> | string
     name?: StringWithAggregatesFilter<"Customer"> | string
+    nameKana?: StringWithAggregatesFilter<"Customer"> | string
     visitInterval?: IntWithAggregatesFilter<"Customer"> | number
     lastVisitDate?: DateTimeNullableWithAggregatesFilter<"Customer"> | Date | string | null
     nextVisitDate?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
@@ -10177,6 +10195,7 @@ export namespace Prisma {
   export type CustomerCreateInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -10189,6 +10208,7 @@ export namespace Prisma {
   export type CustomerUncheckedCreateInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -10201,6 +10221,7 @@ export namespace Prisma {
   export type CustomerUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10213,6 +10234,7 @@ export namespace Prisma {
   export type CustomerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10225,6 +10247,7 @@ export namespace Prisma {
   export type CustomerCreateManyInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -10235,6 +10258,7 @@ export namespace Prisma {
   export type CustomerUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10245,6 +10269,7 @@ export namespace Prisma {
   export type CustomerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10765,6 +10790,7 @@ export namespace Prisma {
   export type CustomerCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameKana?: SortOrder
     visitInterval?: SortOrder
     lastVisitDate?: SortOrder
     nextVisitDate?: SortOrder
@@ -10779,6 +10805,7 @@ export namespace Prisma {
   export type CustomerMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameKana?: SortOrder
     visitInterval?: SortOrder
     lastVisitDate?: SortOrder
     nextVisitDate?: SortOrder
@@ -10789,6 +10816,7 @@ export namespace Prisma {
   export type CustomerMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    nameKana?: SortOrder
     visitInterval?: SortOrder
     lastVisitDate?: SortOrder
     nextVisitDate?: SortOrder
@@ -12073,6 +12101,7 @@ export namespace Prisma {
   export type CustomerCreateWithoutRequirementsInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -12084,6 +12113,7 @@ export namespace Prisma {
   export type CustomerUncheckedCreateWithoutRequirementsInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -12146,6 +12176,7 @@ export namespace Prisma {
   export type CustomerUpdateWithoutRequirementsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12157,6 +12188,7 @@ export namespace Prisma {
   export type CustomerUncheckedUpdateWithoutRequirementsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12232,6 +12264,7 @@ export namespace Prisma {
   export type CustomerCreateWithoutVisitRecordsInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -12243,6 +12276,7 @@ export namespace Prisma {
   export type CustomerUncheckedCreateWithoutVisitRecordsInput = {
     id?: string
     name: string
+    nameKana?: string
     visitInterval: number
     lastVisitDate?: Date | string | null
     nextVisitDate: Date | string
@@ -12293,6 +12327,7 @@ export namespace Prisma {
   export type CustomerUpdateWithoutVisitRecordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12304,6 +12339,7 @@ export namespace Prisma {
   export type CustomerUncheckedUpdateWithoutVisitRecordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    nameKana?: StringFieldUpdateOperationsInput | string
     visitInterval?: IntFieldUpdateOperationsInput | number
     lastVisitDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nextVisitDate?: DateTimeFieldUpdateOperationsInput | Date | string

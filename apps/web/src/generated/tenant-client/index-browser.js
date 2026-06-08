@@ -132,6 +132,7 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.CustomerScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  nameKana: 'nameKana',
   visitInterval: 'visitInterval',
   lastVisitDate: 'lastVisitDate',
   nextVisitDate: 'nextVisitDate',

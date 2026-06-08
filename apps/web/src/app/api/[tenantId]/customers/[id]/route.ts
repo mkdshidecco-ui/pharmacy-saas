@@ -52,7 +52,7 @@ export async function PUT(
     if (!tenant) return NextResponse.json({ error: 'テナントが見つかりません' }, { status: 404 });
 
     const db = getTenantDb(tenant.id);
-    const { name, visitInterval, lastVisitDate, nextVisitDate } = await request.json();
+    const { name, nameKana, visitInterval, lastVisitDate, nextVisitDate } = await request.json();
 
     // 既存顧客情報を取得
     const existingCustomer = await db.customer.findUnique({
@@ -79,6 +79,7 @@ export async function PUT(
       where: { id },
       data: {
         ...(name !== undefined ? { name } : {}),
+        ...(nameKana !== undefined ? { nameKana } : {}),
         visitInterval: updatedVisitInterval,
         lastVisitDate: updatedLastVisitDate,
         nextVisitDate: updatedNextVisitDate,

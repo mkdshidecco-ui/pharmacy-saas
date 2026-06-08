@@ -28,6 +28,7 @@ model User {
 model Customer {
   id            String                @id @default(uuid())
   name          String
+  nameKana      String                @default("")
   visitInterval Int                   // 来店周期（日）。0=来店不要
   lastVisitDate DateTime?             // 最終来店日（周期繰り返し計算の起点）
   nextVisitDate DateTime              // 次回来店予定日（後方互換性維持）

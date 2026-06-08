@@ -89,6 +89,16 @@ export async function POST(
       );
     }
 
+    const headerCols = lines[0]
+      .split(',')
+      .map((c) => c.trim().replace(/^"(.*)"$/, '$1').toLowerCase());
+
+    const nameIndex = headerCols.findIndex(c => c.includes('名前') || c.includes('name'));
+    const kanaIndex = headerCols.findIndex(c => c.includes('フリガナ') || c.includes('かな') || c.includes('kana') || c.includes('ふりがな'));
+    const intervalIndex = headerCols.findIndex(c => c.includes('周期') || c.includes('interval'));
+    const lastVisitIndex = headerCols.findIndex(c => c.includes('最終') || c.includes('lastvisit') || c.includes('実績'));
+    const reqsIndex = headerCols.findIndex(c => c.includes('希望商品') || c.includes('requirement') || c.includes('商品'));
+
     const dataLines = lines.slice(1);
     const results: { success: number; errors: string[]; warnings: string[] } = {
       success: 0,
@@ -110,7 +120,6 @@ export async function POST(
       const line = dataLines[i];
 
       // カンマ区切りでパース（ダブルクォート対応）
-      // 第4カラム（希望商品）にセミコロンが含まれているためシンプルに先頭3カラムを切り出す
       const csvCols = line
         .split(',')
         .map((c) => c.trim().replace(/^"(.*)"$/, '$1'));
@@ -120,9 +129,27 @@ export async function POST(
         continue;
       }
 
-      // 第4カラムは先頭3カラムを取り出した残りを結合（商品名にカンマが含まれる場合の対応）
-      const [name, intervalStr, lastVisitStr, ...restCols] = csvCols;
-      const requirementsRaw = restCols.join(','); // 残りを再結合
+      let name = '';
+      let nameKana = '';
+      let intervalStr = '14';
+      let lastVisitStr = '';
+      let requirementsRaw = '';
+
+      if (kanaIndex !== -1) {
+        // 新フォーマット (フリガナあり)
+        name = csvCols[nameIndex !== -1 ? nameIndex : 0] || '';
+        nameKana = csvCols[kanaIndex] || '';
+        intervalStr = csvCols[intervalIndex !== -1 ? intervalIndex : (nameIndex < kanaIndex ? 2 : 1)] || '14';
+        lastVisitStr = csvCols[lastVisitIndex !== -1 ? lastVisitIndex : (nameIndex < kanaIndex ? 3 : 2)] || '';
+        requirementsRaw = reqsIndex !== -1 ? csvCols.slice(reqsIndex).join(',') : '';
+      } else {
+        // 旧フォーマット (フリガナなし)
+        name = csvCols[nameIndex !== -1 ? nameIndex : 0] || '';
+        nameKana = '';
+        intervalStr = csvCols[intervalIndex !== -1 ? intervalIndex : 1] || '14';
+        lastVisitStr = csvCols[lastVisitIndex !== -1 ? lastVisitIndex : 2] || '';
+        requirementsRaw = reqsIndex !== -1 ? csvCols.slice(reqsIndex).join(',') : csvCols.slice(3).join(',');
+      }
 
       // 名前チェック
       if (!name) {
@@ -174,6 +201,7 @@ export async function POST(
           const customer = await tx.customer.create({
             data: {
               name,
+              nameKana,
               visitInterval,
               lastVisitDate,
               nextVisitDate,

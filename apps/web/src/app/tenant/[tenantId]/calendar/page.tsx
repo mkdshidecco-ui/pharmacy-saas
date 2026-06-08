@@ -26,10 +26,13 @@ const formatDate = (dateStr: string) => {
   return dateStr;
 };
 
+const todayStr = new Date().toISOString().split('T')[0];
+
 export default function TenantCalendar() {
   const params = useParams();
   const tenantId = params?.tenantId as string;
   const router = useRouter();
+  const wheelTimerRef = useRef<any>(null);
 
   const [calendarData, setCalendarData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -386,7 +389,6 @@ export default function TenantCalendar() {
   };
 
   const calendarDays = getCalendarDays();
-  const todayStr = new Date().toISOString().split('T')[0];
 
   if (loading && !calendarData) {
     return (
@@ -398,11 +400,9 @@ export default function TenantCalendar() {
   }
 
   // マウスホイール / タッチパッドスクロールで週を移動
-  const wheelTimerRef = useRef<any>(null);
   const handleCalendarWheel = (e: React.WheelEvent) => {
     // モーダルが開いている時はスクロール操作を無視
     if (visitModalCustomer) return;
-    e.preventDefault();
     clearTimeout(wheelTimerRef.current);
     wheelTimerRef.current = setTimeout(() => {
       if (e.deltaY > 0) {

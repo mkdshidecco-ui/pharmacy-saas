@@ -77,12 +77,17 @@ const kanjiFirstCharMap: Record<string, string> = {
   '渡': 'わ', '和': 'わ', '若': 'わ', '脇': 'わ', '鷲': 'わ', '綿': 'わ', '輪': 'わ'
 };
 
-const getPhoneticFirstChar = (name: string): string => {
-  if (!name) return '';
-  const first = name.charAt(0);
+const getPhoneticFirstChar = (nameKana: string, name: string): string => {
+  const target = (nameKana || '').trim() || (name || '').trim();
+  if (!target) return '';
+  const first = target.charAt(0);
   const code = first.charCodeAt(0);
   // ひらがな・カタカナの場合はそのまま返す
   if ((code >= 0x3040 && code <= 0x309F) || (code >= 0x30A0 && code <= 0x30FF)) {
+    // カタカナ (0x30A1-0x30F6) -> ひらがな (0x3041-0x3096) に統一
+    if (code >= 0x30A1 && code <= 0x30F6) {
+      return String.fromCharCode(code - 0x60);
+    }
     return first;
   }
   return kanjiFirstCharMap[first] || first;
@@ -100,11 +105,14 @@ export default function TenantCustomers() {
 
   // 顧客追加用
   const [newCustomerName, setNewCustomerName] = useState('');
+  const [newCustomerNameKana, setNewCustomerNameKana] = useState('');
   const [newCustomerInterval, setNewCustomerInterval] = useState<string>('14');
   const [newCustomerLastVisit, setNewCustomerLastVisit] = useState('');
 
   // 紐付け・スケジュール編集（訂正）用
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [editCustomerName, setEditCustomerName] = useState('');
+  const [editCustomerNameKana, setEditCustomerNameKana] = useState('');
   const [selectedCustomerReqs, setSelectedCustomerReqs] = useState<{ productId: string; quantity: number }[]>([]);
   const [addReqProductId, setAddReqProductId] = useState('');
   const [addReqQuantity, setAddReqQuantity] = useState<string>('1');
@@ -226,12 +234,14 @@ export default function TenantCustomers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newCustomerName,
+          nameKana: newCustomerNameKana,
           visitInterval: parseInt(newCustomerInterval, 10) || 0,
           lastVisitDate: newCustomerLastVisit || null,
         }),
       });
       if (res.ok) {
         setNewCustomerName('');
+        setNewCustomerNameKana('');
         setNewCustomerInterval('14');
         setNewCustomerLastVisit('');
         await fetchData();
@@ -265,6 +275,8 @@ export default function TenantCustomers() {
   // 紐付け対象の顧客が選択されたとき
   const selectCustomerForReqs = (customer: any) => {
     setSelectedCustomerId(customer.id);
+    setEditCustomerName(customer.name || '');
+    setEditCustomerNameKana(customer.nameKana || '');
     setSelectedCustomerReqs(
       customer.requirements.map((r: any) => ({
         productId: r.productId,
@@ -326,11 +338,13 @@ export default function TenantCustomers() {
         }),
       });
 
-      // 2. 来店スケジュール (最終来店日、周期) の保存
+      // 2. 来店スケジュール (氏名、フリガナ、最終来店日、周期) の保存
       const customerRes = await fetch(`/api/${tenantId}/customers/${selectedCustomerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: editCustomerName,
+          nameKana: editCustomerNameKana,
           visitInterval: parseInt(editVisitInterval, 10) || 0,
           lastVisitDate: editLastVisitDate || null,
         }),
@@ -365,10 +379,10 @@ export default function TenantCustomers() {
 
     const isValid = cols.length >= 2 &&
                     (cols[0].includes('名前') || cols[0].includes('name')) &&
-                    (cols[1].includes('周期') || cols[1].includes('interval'));
+                    cols.some(c => c.includes('周期') || c.includes('interval'));
 
     if (!isValid) {
-      setCsvMessage({ type: 'error', text: 'CSVヘッダー形式が異なります。（名前,来店周期(日),最終来店日(任意),希望商品一覧(任意)）' });
+      setCsvMessage({ type: 'error', text: 'CSVヘッダー形式が異なります。（名前,[フリガナ],来店周期(日),最終来店日(任意),希望商品一覧(任意)）' });
       return;
     }
 
@@ -438,12 +452,15 @@ export default function TenantCustomers() {
   // CSVエクスポート
   const handleExportCustomersToCsv = () => {
     let csvContent = '\uFEFF';
-    csvContent += '顧客名,来店周期(日),最終来店日,希望商品一覧\n';
+    csvContent += '顧客名,フリガナ,来店周期(日),最終来店日,希望商品一覧\n';
 
     customers.forEach(c => {
       const escapedName = c.name.includes(',') || c.name.includes('"')
         ? `"${c.name.replace(/"/g, '""')}"`
         : c.name;
+      const escapedKana = (c.nameKana || '').includes(',') || (c.nameKana || '').includes('"')
+        ? `"${(c.nameKana || '').replace(/"/g, '""')}"`
+        : (c.nameKana || '');
 
       const lastVisitStr = c.lastVisitDate ? new Date(c.lastVisitDate).toISOString().split('T')[0] : '';
 
@@ -454,7 +471,7 @@ export default function TenantCustomers() {
         ? `"${reqsStr.replace(/"/g, '""')}"`
         : reqsStr;
 
-      csvContent += `${escapedName},${c.visitInterval},${lastVisitStr},${escapedReqsStr}\n`;
+      csvContent += `${escapedName},${escapedKana},${c.visitInterval},${lastVisitStr},${escapedReqsStr}\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -499,8 +516,9 @@ export default function TenantCustomers() {
     // Find matching item using getPhoneticFirstChar
     for (const item of Array.from(items)) {
       const name = item.getAttribute('data-customer-name') || '';
-      const phoneticFirst = getPhoneticFirstChar(name);
-      if (chars.some(c => name.startsWith(c) || phoneticFirst === c)) {
+      const nameKana = item.getAttribute('data-customer-kana') || '';
+      const phoneticFirst = getPhoneticFirstChar(nameKana, name);
+      if (chars.some(c => name.startsWith(c) || nameKana.startsWith(c) || phoneticFirst === c)) {
         const container = customerListRef.current;
         container.scrollTo({ top: (item as HTMLElement).offsetTop - 16, behavior: 'smooth' });
         return;
@@ -513,8 +531,9 @@ export default function TenantCustomers() {
       const fallbackChars = kanaRanges[kanaRows[i]] || [];
       for (const item of Array.from(items)) {
         const name = item.getAttribute('data-customer-name') || '';
-        const phoneticFirst = getPhoneticFirstChar(name);
-        if (fallbackChars.some(c => name.startsWith(c) || phoneticFirst === c)) {
+        const nameKana = item.getAttribute('data-customer-kana') || '';
+        const phoneticFirst = getPhoneticFirstChar(nameKana, name);
+        if (fallbackChars.some(c => name.startsWith(c) || nameKana.startsWith(c) || phoneticFirst === c)) {
           const container = customerListRef.current;
           container.scrollTo({ top: (item as HTMLElement).offsetTop - 16, behavior: 'smooth' });
           return;
@@ -587,6 +606,7 @@ export default function TenantCustomers() {
                 <div
                   key={cust.id}
                   data-customer-name={cust.name}
+                  data-customer-kana={cust.nameKana}
                   onClick={() => selectCustomerForReqs(cust)}
                   className={`border rounded-xl p-4 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:border-slate-700 ${
                     isSelected
@@ -595,6 +615,9 @@ export default function TenantCustomers() {
                   }`}
                 >
                   <div>
+                    {cust.nameKana && (
+                      <div className="text-[10px] text-slate-500 font-medium tracking-wide mb-0.5 leading-none">{cust.nameKana}</div>
+                    )}
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-slate-100 text-base">{cust.name}</h4>
                       {cust.visitInterval === 0 ? (
@@ -665,6 +688,27 @@ export default function TenantCustomers() {
               <span className="text-xs bg-indigo-500/10 text-indigo-400 font-semibold px-2.5 py-0.5 rounded border border-indigo-500/20 truncate max-w-[8rem]">
                 {customers.find(c => c.id === selectedCustomerId)?.name}
               </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">氏名</label>
+                <input
+                  type="text"
+                  value={editCustomerName}
+                  onChange={(e) => setEditCustomerName(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">フリガナ（ソート用）</label>
+                <input
+                  type="text"
+                  value={editCustomerNameKana}
+                  onChange={(e) => setEditCustomerNameKana(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -798,16 +842,28 @@ export default function TenantCustomers() {
             新規顧客登録
           </h3>
           <form onSubmit={handleAddCustomer} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1.5">氏名</label>
-              <input
-                type="text"
-                required
-                value={newCustomerName}
-                onChange={(e) => setNewCustomerName(e.target.value)}
-                placeholder="例: 佐藤 健一"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">氏名</label>
+                <input
+                  type="text"
+                  required
+                  value={newCustomerName}
+                  onChange={(e) => setNewCustomerName(e.target.value)}
+                  placeholder="例: 佐藤 健一"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">フリガナ（ソート用）</label>
+                <input
+                  type="text"
+                  value={newCustomerNameKana}
+                  onChange={(e) => setNewCustomerNameKana(e.target.value)}
+                  placeholder="例: サトウ ケンイチ"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -899,7 +955,7 @@ export default function TenantCustomers() {
             rows={4}
             value={customerCsvText}
             onChange={(e) => setCustomerCsvText(e.target.value)}
-            placeholder={"名前,来店周期(日),最終来店日,希望商品一覧\n山田太郎,14,2026-05-25,アムロジピン錠5mg:2;ロキソプロフェンNa錠60mg:1\n鈴木花子,0,,\n田中次郎,28,2026-05-01,"}
+            placeholder={"名前,フリガナ,来店周期(日),最終来店日,希望商品一覧\n山田太郎,ヤマダタロウ,14,2026-05-25,アムロジピン錠5mg:2;ロキソプロフェンNa錠60mg:1\n鈴木花子,スズキハナコ,0,,\n田中次郎,,28,2026-05-01,"}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none text-white font-mono mb-3"
           />
 
@@ -917,7 +973,7 @@ export default function TenantCustomers() {
           <div className="bg-slate-950/40 border border-slate-800 p-3 rounded-xl text-xs text-slate-400 space-y-2">
             <p className="font-bold text-slate-200 flex items-center gap-1"><FileText className="w-3.5 h-3.5" /> フォーマット</p>
             <pre className="bg-slate-950 p-2 rounded text-[10px] text-indigo-300 overflow-x-auto leading-relaxed">
-              {"名前,周期(日),最終来店日,希望商品一覧\n山田太郎,14,2026-05-25,薬A:2;薬B:1\n鈴木花子,0,,"}
+              {"名前,フリガナ,周期(日),最終来店日,希望商品一覧\n山田太郎,ヤマダタロウ,14,2026-05-25,薬A:2;薬B:1\n鈴木花子,スズキハナコ,0,,"}
             </pre>
             <ul className="text-[10px] text-slate-500 space-y-0.5 list-disc list-inside">
               <li>希望商品: <span className="text-indigo-400 font-mono">商品名:数量</span>、複数は <span className="text-indigo-400 font-mono">;</span> 区切り</li>
