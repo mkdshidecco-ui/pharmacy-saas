@@ -397,8 +397,27 @@ export default function TenantCalendar() {
     );
   }
 
+  // マウスホイール / タッチパッドスクロールで週を移動
+  const wheelTimerRef = useRef<any>(null);
+  const handleCalendarWheel = (e: React.WheelEvent) => {
+    // モーダルが開いている時はスクロール操作を無視
+    if (visitModalCustomer) return;
+    e.preventDefault();
+    clearTimeout(wheelTimerRef.current);
+    wheelTimerRef.current = setTimeout(() => {
+      if (e.deltaY > 0) {
+        setWeekOffset(prev => prev + 1); // 下スクロール → 翌週
+      } else if (e.deltaY < 0) {
+        setWeekOffset(prev => prev - 1); // 上スクロール → 前週
+      }
+    }, 50);
+  };
+
   return (
-    <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+    <div
+      className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6"
+      onWheel={handleCalendarWheel}
+    >
       {/* 操作ヘッダー */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div className="flex items-center gap-3">
@@ -431,9 +450,6 @@ export default function TenantCalendar() {
             <Download className="w-3.5 h-3.5" />
             CSV出力
           </button>
-          <div className="text-xs text-slate-400 font-medium">
-            現在オフセット: <span className="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20">{weekOffset} 週</span>
-          </div>
         </div>
       </div>
 
