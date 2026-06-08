@@ -32,7 +32,6 @@ export default function TenantCalendar() {
   const params = useParams();
   const tenantId = params?.tenantId as string;
   const router = useRouter();
-  const wheelTimerRef = useRef<any>(null);
 
   const [calendarData, setCalendarData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -56,10 +55,12 @@ export default function TenantCalendar() {
 
   // カレンダーDnD（来店日の移動）
   const [dragVisit, setDragVisit] = useState<any | null>(null);
-  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const touchDragVisitRef = useRef<any>(null);
   const touchTimerRef = useRef<any>(null);
+  const touchOverDateRef = useRef<string | null>(null);
   const [isTouchDraggingVisit, setIsTouchDraggingVisit] = useState(false);
+
+  const DRAG_OVER_CLASSES = ['bg-indigo-900/40', 'border-indigo-400', 'ring-1', 'ring-indigo-400/50', 'scale-[1.02]'];
 
   const fetchCalendar = async () => {
     setLoading(true);
@@ -269,18 +270,22 @@ export default function TenantCalendar() {
   const handleCellDragOver = (e: React.DragEvent, dateStr: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (dragOverDate !== dateStr) {
-      setDragOverDate(dateStr);
+    const cell = e.currentTarget as HTMLElement;
+    if (!cell.classList.contains('scale-[1.02]')) {
+      cell.classList.add(...DRAG_OVER_CLASSES);
     }
   };
 
-  const handleCellDragLeave = () => {
-    setDragOverDate(null);
+  const handleCellDragLeave = (e: React.DragEvent) => {
+    const cell = e.currentTarget as HTMLElement;
+    cell.classList.remove(...DRAG_OVER_CLASSES);
   };
 
   const handleCellDrop = async (e: React.DragEvent, dateStr: string) => {
     e.preventDefault();
-    setDragOverDate(null);
+    const cell = e.currentTarget as HTMLElement;
+    cell.classList.remove(...DRAG_OVER_CLASSES);
+    
     if (!dragVisit || dragVisit.visitDate === dateStr) {
       setDragVisit(null);
       return;
@@ -306,25 +311,34 @@ export default function TenantCalendar() {
     const touch = e.touches[0];
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
     if (!el) return;
-    const cell = el.closest('[data-calendar-date]');
+    const cell = el.closest('[data-calendar-date]') as HTMLElement;
     if (cell) {
       const targetDate = cell.getAttribute('data-calendar-date');
-      if (dragOverDate !== targetDate) {
-        setDragOverDate(targetDate);
+      if (touchOverDateRef.current !== targetDate) {
+        if (touchOverDateRef.current) {
+          document.querySelector(`[data-calendar-date="${touchOverDateRef.current}"]`)?.classList.remove(...DRAG_OVER_CLASSES);
+        }
+        touchOverDateRef.current = targetDate;
+        cell.classList.add(...DRAG_OVER_CLASSES);
       }
     }
   };
 
   const handleVisitTouchEnd = async () => {
     clearTimeout(touchTimerRef.current);
-    if (isTouchDraggingVisit && touchDragVisitRef.current && dragOverDate) {
-      if (touchDragVisitRef.current.visitDate !== dragOverDate) {
-        await rescheduleVisit(touchDragVisitRef.current, dragOverDate);
+    const targetDate = touchOverDateRef.current;
+    if (targetDate) {
+      document.querySelector(`[data-calendar-date="${targetDate}"]`)?.classList.remove(...DRAG_OVER_CLASSES);
+    }
+    
+    if (isTouchDraggingVisit && touchDragVisitRef.current && targetDate) {
+      if (touchDragVisitRef.current.visitDate !== targetDate) {
+        await rescheduleVisit(touchDragVisitRef.current, targetDate);
       }
     }
     setIsTouchDraggingVisit(false);
     touchDragVisitRef.current = null;
-    setDragOverDate(null);
+    touchOverDateRef.current = null;
   };
 
   // 来店日の実際の変更処理（nextVisitDate のみを直接書き換える ＝ 過去実績は動かない）
@@ -376,7 +390,7 @@ export default function TenantCalendar() {
     document.body.removeChild(link);
   };
 
-  const getCalendarDays = () => {
+  const calendarDays = useMemo(() => {
     if (!calendarData?.startDate || !calendarData?.endDate) return [];
     const start = new Date(calendarData.startDate);
     const end = new Date(calendarData.endDate);
@@ -389,9 +403,7 @@ export default function TenantCalendar() {
       days.push(d);
     }
     return days;
-  };
-
-  const calendarDays = getCalendarDays();
+  }, [calendarData?.startDate, calendarData?.endDate]);
 
   // Group visits by date for O(1) rendering lookup to avoid performance lag
   const visitsByDate = useMemo(() => {
@@ -411,25 +423,8 @@ export default function TenantCalendar() {
     );
   }
 
-  // マウスホイール / タッチパッドスクロールで週を移動
-  const handleCalendarWheel = (e: React.WheelEvent) => {
-    // モーダルが開いている時はスクロール操作を無視
-    if (visitModalCustomer) return;
-    clearTimeout(wheelTimerRef.current);
-    wheelTimerRef.current = setTimeout(() => {
-      if (e.deltaY > 0) {
-        setWeekOffset(prev => prev + 1); // 下スクロール → 翌週
-      } else if (e.deltaY < 0) {
-        setWeekOffset(prev => prev - 1); // 上スクロール → 前週
-      }
-    }, 50);
-  };
-
   return (
-    <div
-      className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6"
-      onWheel={handleCalendarWheel}
-    >
+    <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
       {/* 操作ヘッダー */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div className="flex items-center gap-3">
@@ -489,7 +484,6 @@ export default function TenantCalendar() {
         {calendarDays.map((day, idx) => {
             const dateStr = day.toISOString().split('T')[0];
             const isToday = dateStr === todayStr;
-            const isDragTarget = dragOverDate === dateStr;
             const dayVisits = visitsByDate[dateStr] || [];
 
           return (
@@ -500,9 +494,7 @@ export default function TenantCalendar() {
               onDragLeave={handleCellDragLeave}
               onDrop={(e) => handleCellDrop(e, dateStr)}
               className={`min-h-[110px] p-2.5 rounded-xl border flex flex-col justify-between transition-all ${
-                isDragTarget
-                  ? 'bg-indigo-900/40 border-indigo-400 ring-1 ring-indigo-400/50 scale-[1.02]'
-                  : isToday
+                isToday
                   ? 'bg-indigo-950/40 border-indigo-500/60 ring-1 ring-indigo-500/30'
                   : 'bg-slate-950/40 border-slate-800 hover:border-slate-700'
               }`}
