@@ -36,7 +36,9 @@ npx prisma db push \
   --schema=/app/prisma/tenant.prisma \
   --skip-generate \
   --accept-data-loss 2>&1 | grep -v "^$" || true
-echo "      Tenant database template updated."
+# Apply WAL mode and sqlite optimizations to template
+sqlite3 "$TEMPLATE_DB_PATH" "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-8000; PRAGMA temp_store=MEMORY; PRAGMA mmap_size=67108864;"
+echo "      Tenant database template updated and optimized."
 
 # --- 4. Migrate ALL existing tenant databases ---
 # Applies any new schema columns to every tenant's dev.db.
@@ -51,8 +53,10 @@ for tenant_dir in /data/tenants/*/; do
       --schema=/app/prisma/tenant.prisma \
       --skip-generate \
       --accept-data-loss 2>&1 | grep -v "^$" || true
+    # Apply WAL mode and optimizations to existing database
+    sqlite3 "${tenant_dir}dev.db" "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA cache_size=-8000; PRAGMA temp_store=MEMORY; PRAGMA mmap_size=67108864;"
     TENANT_COUNT=$((TENANT_COUNT + 1))
-    echo "      Migrated tenant: $TENANT_ID"
+    echo "      Migrated and optimized tenant: $TENANT_ID"
   fi
 done
 echo "      Total tenants migrated: $TENANT_COUNT"
