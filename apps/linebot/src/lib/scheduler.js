@@ -69,18 +69,23 @@ function unregisterScheduler(db, lineUserId) {
 }
 
 /**
- * 特定のテナントの本日の未来店者リストを取得する
+ * 昨日までに来局予定だったが、まだ来局実績がない（未完了の）顧客リストを取得する
  * @param {import('better-sqlite3').Database} db テナントDB
- * @returns {string[]} 未来店者の名前リスト
+ * @returns {string[]} 未完了の顧客の名前リスト
  */
-function getTodayUnvisitedCustomers(db) {
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-  
+function getOverdueUnvisitedCustomers(db) {
+  // 日本時間の今日の日付文字列 (YYYY-MM-DD) を取得
+  const now = new Date();
+  const jstString = now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" });
+  const jstDate = new Date(jstString);
+  const year = jstDate.getFullYear();
+  const month = String(jstDate.getMonth() + 1).padStart(2, '0');
+  const day = String(jstDate.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
   // 周期設定のある顧客を全て取得
   const customers = db.prepare(`
-    SELECT id, name, visitInterval, nextVisitDate
+    SELECT id, name, nextVisitDate
     FROM Customer
     WHERE visitInterval > 0
   `).all();
@@ -88,30 +93,14 @@ function getTodayUnvisitedCustomers(db) {
   const unvisitedList = [];
 
   for (const customer of customers) {
-    const interval = customer.visitInterval;
-    let tempDate = new Date(customer.nextVisitDate);
-    tempDate.setHours(0, 0, 0, 0);
+    if (!customer.nextVisitDate) continue;
+    
+    // nextVisitDate から YYYY-MM-DD 部分を抽出
+    const nextVisitStr = customer.nextVisitDate.split('T')[0];
 
-    // 今日の0時以前である場合、今日以降まで進める
-    while (tempDate < startOfDay) {
-      tempDate.setDate(tempDate.getDate() + interval);
-    }
-
-    const tempDateStr = tempDate.toISOString().split('T')[0];
-
-    // 予定日が今日と一致する場合
-    if (tempDateStr === todayStr) {
-      // 本日すでに実績があるかチェック
-      const visited = db.prepare(`
-        SELECT 1 FROM VisitRecord
-        WHERE customerId = ? AND date(visitedAt, 'localtime') = ?
-        LIMIT 1
-      `).get(customer.id, todayStr);
-
-      if (!visited) {
-        // 実績がなければ未来店者として追加
-        unvisitedList.push(customer.name);
-      }
+    // 予定日が今日よりも過去（昨日以前）の場合
+    if (nextVisitStr < todayStr) {
+      unvisitedList.push(customer.name);
     }
   }
 
@@ -163,15 +152,15 @@ async function runDailyScheduleJob(systemDb, dataRoot) {
 
       if (configUsers.length === 0) continue;
 
-      // 本日の未来店者リストを取得
-      const unvisited = getTodayUnvisitedCustomers(db);
+      // 昨日までが来局予定日の未来店者リストを取得
+      const unvisited = getOverdueUnvisitedCustomers(db);
 
       // 送信メッセージの構築
       let messageText = '';
       if (unvisited.length > 0) {
-        messageText = `📢 本日の来店予定者（未来店）のお知らせです。\n\n以下のメンバーの来店予定がありますが、まだ来店処理が完了していません。\n\n${unvisited.map(name => `・ ${name}`).join('\n')}\n\n本日中の対応をお願いいたします。`;
+        messageText = `📢 昨日までに来局予定でしたが、まだ来局処理が完了していない顧客（未来店）のお知らせです。\n\n以下のメンバーの対応状況をご確認ください。\n\n${unvisited.map(name => `・ ${name}`).join('\n')}`;
       } else {
-        messageText = `✨ 本日の来店予定者（未来店）のお知らせです。\n\n本日予定されている未来店の顧客はいません。`;
+        messageText = `✨ 昨日までに来局予定の顧客のうち、未完了（未来店）の方はいません。`;
       }
 
       // 各ユーザーへプッシュ送信するためにクライアント作成
