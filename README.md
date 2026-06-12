@@ -70,7 +70,7 @@ docker-compose up -d --build
 
 ### 方法A: スーパー管理者ポータルから追加（推奨）
 
-1. `http://localhost:3000/login` にアクセスします。
+1. `https://line.aileblanc.jp/login` にアクセスします。
 2. 環境変数に設定した `ADMIN_EMAIL` と `ADMIN_PASSWORD` を使用してログインします。
 3. 自動的にスーパー管理者画面（`/admin`）に遷移します。
 4. 「新規店舗（テナント）追加」フォームに店舗ID（スラッグ）、店舗名、初期管理者アカウント情報を入力し「店舗を作成して初期構築」ボタンをクリックします。
@@ -111,14 +111,14 @@ node scripts/migrate-existing.js ../demand-forecast-app/dev.db yanagiya-pharmacy
 各店舗の設定画面（`/tenant/[tenantId]/settings`）を開くと、その店舗固有の Webhook URL が表示されます。
 
 ```text
-http://<あなたのドメインまたはIP>:3005/webhook/yanagiya-pharmacy
+https://line.aileblanc.jp/webhook/yanagiya-pharmacy
 ```
 
 この URL を LINE Developers コンソールの **「Messaging API設定」** ＞ **「Webhook URL」** に登録し、**「Webhookの送信」をオン（Enabled）**に設定します。
 
 ### 2. アクセストークン・シークレットの設定
 
-1. 店舗管理者のメール・パスワードで `http://localhost:3000/login` からログインします。
+1. 店舗管理者のメール・パスワードで `https://line.aileblanc.jp/login` からログインします。
 2. 左メニューの「LINE BOT設定」を開きます。
 3. LINE Developers から取得した **Channel Secret** と **Channel Access Token（長期）** を入力して保存します。
 4. これで、この店舗専用の LINE BOT 連携が即座に開始されます！
@@ -160,3 +160,5 @@ curl http://localhost:3005/health
 コンテナに入って SQLite を操作する場合：
 - **システムDB**: `sqlite3 /data/system/tenants.db`
 - **テナントDB**: `sqlite3 /data/tenants/[テナントID]/dev.db`
+
+2026/06/12　16:47　デプロイテスト
