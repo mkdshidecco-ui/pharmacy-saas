@@ -172,9 +172,10 @@ jobs:
             REPO_URL="https://${GHCR_PAT}@github.com/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas.git"
 
             if [ -d "$REPO_DIR/.git" ]; then
-              echo "      Repository exists. Pulling latest changes..."
+              echo "      Repository exists. Resetting and pulling latest changes..."
               cd "$REPO_DIR"
-              git pull --ff-only origin main
+              git fetch origin main
+              git reset --hard origin/main
             else
               echo "      Repository not found. Cloning for the first time..."
               git clone "$REPO_URL" "$REPO_DIR"
