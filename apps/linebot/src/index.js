@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const Database = require('better-sqlite3');
+const bcrypt = require('bcryptjs');
 const { middleware, messagingApi } = require('@line/bot-sdk');
 const { handleStockMessage } = require('./lib/stock');
 const { handleCalendarMessage } = require('./lib/calendar');
@@ -11,10 +12,6 @@ const { registerScheduler, unregisterScheduler, initScheduler } = require('./lib
 const app = express();
 const PORT = process.env.PORT || 3005;
 const dataRoot = process.env.DATA_ROOT || '/data';
-
-// ログインID・パスワード（.env で設定）
-const LOGIN_ID = process.env.LINEBOT_LOGIN_ID || 'staff';
-const LOGIN_PASSWORD = process.env.LINEBOT_PASSWORD || 'changeme';
 
 // System DB 接続
 const systemDbPath = process.env.SYSTEM_DATABASE_URL
@@ -30,32 +27,70 @@ try {
   console.error('[LINE BOT ERROR] Failed to connect to System DB:', err);
 }
 
+// ============================================================
 // 認証セッション管理（メモリ内）
-// Map<`${tenantId}:${lineUserId}`, { step: 'awaiting_password', loginId: string, expireAt: number }>
+// 認証フロー（Webポータルと同じ店舗slug + email + パスワードで認証）:
+//   step 1: ユーザーが店舗slug を送信
+//   step 2: ユーザーがメールアドレスを送信
+//   step 3: ユーザーがパスワードを送信 → bcrypt照合 → ホワイトリスト追加
+//
+// セッションキー: `${tenant.id}:${lineUserId}`
+// セッション構造:
+//   { step: 'awaiting_email', tenantId: string, tenantSlug: string, expireAt: number }
+//   { step: 'awaiting_password', tenantId: string, email: string, expireAt: number }
+// ============================================================
 const authSessions = new Map();
 
-// テナント解決関数
+// セッション有効期間（5分）
+const SESSION_TTL_MS = 5 * 60 * 1000;
+
+// テナント解決関数（System DB から id または slug で検索）
+function resolveTenantBySlug(slug) {
+  if (!systemDb) return null;
+  try {
+    return systemDb.prepare(
+      `SELECT * FROM "Tenant" WHERE slug = ? AND isActive = 1`
+    ).get(slug);
+  } catch (err) {
+    console.error(`[LINE BOT ERROR] Failed to resolve tenant by slug "${slug}":`, err);
+    return null;
+  }
+}
+
+// テナント解決関数（id or slug 両対応 - Webhook認証用）
 function resolveTenant(tenantId) {
   if (!systemDb) return null;
   try {
-    const stmt = systemDb.prepare(`
-      SELECT * FROM "Tenant"
-      WHERE (id = ? OR slug = ?) AND isActive = 1
-    `);
-    return stmt.get(tenantId, tenantId);
+    return systemDb.prepare(
+      `SELECT * FROM "Tenant" WHERE (id = ? OR slug = ?) AND isActive = 1`
+    ).get(tenantId, tenantId);
   } catch (err) {
     console.error(`[LINE BOT ERROR] Failed to resolve tenant ${tenantId}:`, err);
     return null;
   }
 }
 
-// テナントDBを取得する
+// テナントDBを取得する（better-sqlite3で直接接続）
 function getTenantDb(tenantId) {
   const dbPath = path.join(dataRoot, 'tenants', tenantId, 'dev.db');
   const db = new Database(dbPath, { fileMustExist: false });
   // ホワイトリストテーブルを確実に作成
   ensureWhitelistTable(db);
   return db;
+}
+
+// テナントDBのUserテーブルからユーザーを検索する（better-sqlite3使用）
+function findUserByEmail(tenantId, email) {
+  try {
+    const dbPath = path.join(dataRoot, 'tenants', tenantId, 'dev.db');
+    const db = new Database(dbPath, { fileMustExist: false });
+    const user = db.prepare(`SELECT id, email, name, password, role FROM "User" WHERE email = ?`).get(email);
+    db.close();
+    return user || null;
+  } catch (err) {
+    console.error(`[LINE BOT ERROR] Failed to find user by email for tenant ${tenantId}:`, err);
+    return null;
+  }
 }
 
 // ヘルスチェックエンドポイント
@@ -146,47 +181,90 @@ async function handleEvent(event, tenant, client) {
   try {
     const tenantDb = getTenantDb(tenant.id);
 
-    // ===== 認証セッション処理（パスワード入力待ち） =====
+    // ================================================================
+    // 認証セッション処理
+    // ================================================================
     const session = authSessions.get(sessionKey);
-    if (session && session.step === 'awaiting_password') {
-      // セッションの有効期限チェック（60秒）
+
+    // --- STEP 2: メールアドレス待ち ---
+    if (session && session.step === 'awaiting_email') {
       if (Date.now() > session.expireAt) {
         authSessions.delete(sessionKey);
-        replyMessage = { type: 'text', text: '⏰ タイムアウトしました。もう一度ログインIDから送信してください。' };
-      } else if (userText === LOGIN_PASSWORD) {
-        // 正しいパスワード → ホワイトリストに追加
-        addToWhitelist(tenantDb, lineUserId);
-        authSessions.delete(sessionKey);
-        replyMessage = {
-          type: 'text',
-          text: `✅ 登録が完了しました！\nこれより「${tenant.displayName}」のBot機能がご利用いただけます。`
-        };
+        replyMessage = { type: 'text', text: '⏰ タイムアウトしました。もう一度店舗IDから送信してください。' };
       } else {
-        // 間違ったパスワード
-        authSessions.delete(sessionKey);
-        replyMessage = { type: 'text', text: '❌ パスワードが正しくありません。管理者にご確認ください。' };
+        // メールアドレスを受け取ってパスワード待ちに遷移
+        authSessions.set(sessionKey, {
+          step: 'awaiting_password',
+          tenantId: session.tenantId,
+          email: userText,
+          expireAt: Date.now() + SESSION_TTL_MS
+        });
+        replyMessage = { type: 'text', text: `📧 メールアドレス「${userText}」を受け付けました。\nパスワードを入力してください。\n（5分以内に送信してください）` };
       }
       await replyMessageWithRetry(client, event.replyToken, replyMessage);
       return;
     }
 
-    // ===== ログインIDコマンド（認証フロー開始） =====
-    if (userText === LOGIN_ID) {
+    // --- STEP 3: パスワード待ち ---
+    if (session && session.step === 'awaiting_password') {
+      if (Date.now() > session.expireAt) {
+        authSessions.delete(sessionKey);
+        replyMessage = { type: 'text', text: '⏰ タイムアウトしました。もう一度店舗IDから送信してください。' };
+      } else {
+        // テナントDBのユーザーをメールアドレスで検索
+        const user = findUserByEmail(session.tenantId, session.email);
+        if (!user) {
+          authSessions.delete(sessionKey);
+          replyMessage = { type: 'text', text: '❌ メールアドレスまたはパスワードが正しくありません。\n管理者にご確認の上、店舗IDから再度お試しください。' };
+        } else {
+          // bcryptでパスワード照合
+          const passwordMatch = await bcrypt.compare(userText, user.password);
+          if (passwordMatch) {
+            // ホワイトリストに追加
+            addToWhitelist(tenantDb, lineUserId);
+            authSessions.delete(sessionKey);
+            replyMessage = {
+              type: 'text',
+              text: `✅ 認証が完了しました！\n「${tenant.displayName}」のBot機能がご利用いただけます。\n\n「ヘルプ」と送信すると利用可能なコマンド一覧を確認できます。`
+            };
+          } else {
+            authSessions.delete(sessionKey);
+            replyMessage = { type: 'text', text: '❌ メールアドレスまたはパスワードが正しくありません。\n管理者にご確認の上、店舗IDから再度お試しください。' };
+          }
+        }
+      }
+      await replyMessageWithRetry(client, event.replyToken, replyMessage);
+      return;
+    }
+
+    // ================================================================
+    // STEP 1: 店舗slug 入力 → 認証フロー開始
+    // ================================================================
+    // テナントのslugかどうか確認（システムDBで検索）
+    const inputTenant = resolveTenantBySlug(userText);
+    if (inputTenant) {
       if (isWhitelisted(tenantDb, lineUserId)) {
         replyMessage = { type: 'text', text: '✅ すでに登録済みです。引き続きBot機能をご利用ください。' };
       } else {
-        // パスワード入力待ちセッションを開始（60秒）
+        // 認証セッション開始（メールアドレス入力待ちに遷移）
         authSessions.set(sessionKey, {
-          step: 'awaiting_password',
-          expireAt: Date.now() + 60000
+          step: 'awaiting_email',
+          tenantId: inputTenant.id,
+          tenantSlug: inputTenant.slug,
+          expireAt: Date.now() + SESSION_TTL_MS
         });
-        replyMessage = { type: 'text', text: 'パスワードを入力してください。\n（60秒以内に送信してください）' };
+        replyMessage = {
+          type: 'text',
+          text: `🏥 「${inputTenant.displayName}」の認証を開始します。\nWebポータルのメールアドレスを入力してください。\n（5分以内に送信してください）`
+        };
       }
       await replyMessageWithRetry(client, event.replyToken, replyMessage);
       return;
     }
 
-    // ===== 退社コマンド =====
+    // ================================================================
+    // 退社コマンド
+    // ================================================================
     if (userText === '退社') {
       const removed = removeFromWhitelist(tenantDb, lineUserId);
       if (removed) {
@@ -198,7 +276,9 @@ async function handleEvent(event, tenant, client) {
       return;
     }
 
-    // ===== 定期送信開始コマンド =====
+    // ================================================================
+    // 定期送信開始コマンド
+    // ================================================================
     if (userText === '定期送信開始') {
       const registered = registerScheduler(tenantDb, lineUserId);
       if (registered) {
@@ -210,7 +290,9 @@ async function handleEvent(event, tenant, client) {
       return;
     }
 
-    // ===== 定期送信終了コマンド =====
+    // ================================================================
+    // 定期送信終了コマンド
+    // ================================================================
     if (userText === '定期送信終了') {
       const unregistered = unregisterScheduler(tenantDb, lineUserId);
       if (unregistered) {
@@ -222,31 +304,46 @@ async function handleEvent(event, tenant, client) {
       return;
     }
 
-    // ===== ホワイトリストチェック =====
+    // ================================================================
+    // ホワイトリストチェック（未登録ユーザーへの案内）
+    // ================================================================
     if (!isWhitelisted(tenantDb, lineUserId)) {
-      replyMessage = { type: 'text', text: '🔒 管理者に使用方法を確認してください。' };
+      replyMessage = {
+        type: 'text',
+        text: '🔒 このBotを利用するには登録が必要です。\n\n店舗ID（スラッグ）を送信して登録を開始してください。\n店舗IDは管理者にご確認ください。'
+      };
       await replyMessageWithRetry(client, event.replyToken, replyMessage);
       return;
     }
 
-    // ===== 通常のBotコマンド処理 =====
-    // 1. 在庫管理キーワードの処理
+    // ================================================================
+    // 通常のBotコマンド処理（ホワイトリスト済みユーザーのみ）
+    // ================================================================
+
+    // ヘルプコマンド
+    if (userText === 'ヘルプ' || userText === 'help') {
+      const helpText = `【利用可能なコマンド一覧】\n\n📦 在庫管理\n・「欠品」または「欠品リスト」\n・「欠品登録 [商品名]」\n・「欠品解消 [商品名]」\n・「不動在庫」\n\n📅 来局管理\n・「来局」または「来局予定」\n・「来局登録 [名前] [周期(日)]」\n・「来局周期変更 [名前] [新周期(日)]」\n・「来局削除 [名前]」\n\n🔔 通知設定\n・「定期送信開始」（毎朝8時の通知）\n・「定期送信終了」\n\n🚪 その他\n・「退社」（アカウント削除）\n・「こんにちは」（疎通確認）`;
+      replyMessage = { type: 'text', text: helpText };
+      await replyMessageWithRetry(client, event.replyToken, replyMessage);
+      return;
+    }
+
+    // 在庫管理キーワードの処理
     const stockResponse = await handleStockMessage(userText, tenant.id);
     if (stockResponse) {
       replyMessage = typeof stockResponse === 'object' ? stockResponse : { type: 'text', text: stockResponse };
     }
-    // 2. 来店予定キーワードの処理
+    // 来店予定キーワードの処理
     else {
       const calendarResponse = await handleCalendarMessage(userText, tenant.id);
       if (calendarResponse) {
         replyMessage = typeof calendarResponse === 'object' ? calendarResponse : { type: 'text', text: calendarResponse };
       }
-      // 3. 通信テスト・ヘルプ
+      // 疎通確認
       else if (userText === 'こんにちは') {
         replyMessage = { type: 'text', text: `こんにちは！こちらは「${tenant.displayName}」のLINE窓口です。通信疎通確認に成功しました。` };
       } else {
-        const helpText = `メッセージを受信しました: 「${userText}」\n\n【利用可能なコマンド】\n・「こんにちは」 (疎通確認)\n・「欠品」または「欠品リスト」\n・「欠品登録 [商品名]」\n・「欠品解消 [商品名]」\n・「不動在庫」 (半年先まで使用予定のない在庫)\n・「来局」または「来局予定」\n・「来局登録 [名前] [周期(日)]」\n・「来局周期変更 [名前] [新周期(日)]」\n・「来局削除 [名前]」\n・「定期送信開始」 (毎朝8時の予定通知開始)\n・「定期送信終了」 (通知解除)\n・「退社」 (退社時のアカウント削除)`;
-        replyMessage = { type: 'text', text: helpText };
+        replyMessage = { type: 'text', text: `「${userText}」\n\n「ヘルプ」と送信するとコマンド一覧を確認できます。` };
       }
     }
 
@@ -274,7 +371,7 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`LINE Bot server is running on port ${PORT}`);
-  console.log(`[認証] ログインID: ${LOGIN_ID} でユーザー自己登録が有効`);
+  console.log(`[認証] Webポータルと同じ店舗slug + メールアドレス + パスワードによるホワイトリスト登録が有効`);
   
   if (systemDb) {
     initScheduler(systemDb, dataRoot);

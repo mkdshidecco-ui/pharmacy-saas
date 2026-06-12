@@ -1,0 +1,56 @@
+version: 2
+updates:
+  # ============================================================
+  # Web アプリ（Next.js）の npm 依存関係
+  # ============================================================
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "web"
+    commit-message:
+      prefix: "chore(web)"
+    ignore:
+      # Prisma はスキーマ変更を伴う場合があるため、メジャーアップデートは手動で行う
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+
+  # ============================================================
+  # LINE Bot サーバーの npm 依存関係
+  # ============================================================
+  - package-ecosystem: "npm"
+    directory: "/apps/linebot"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "linebot"
+    commit-message:
+      prefix: "chore(linebot)"
+
+  # ============================================================
+  # GitHub Actions ワークフローのアクション更新
+  # ============================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
