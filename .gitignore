@@ -2,3 +2,19 @@ node_modules/
 .next/
 dist/
 *.log
+
+# 本番環境設定（実際の値を含む）
+.env.production
+.env.local
+.env.*.local
+
+# SSH デプロイキー（秘密鍵は絶対にコミットしない）
+deploy_key
+deploy_key.pub
+
+# 一時スクリプト
+gen_key.js
+gen_deploy_key.ps1
+check-db.js
+apps/web/test-holidays.js
+apps/linebot/check-db.js
