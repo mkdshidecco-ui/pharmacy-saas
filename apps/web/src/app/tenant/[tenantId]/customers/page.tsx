@@ -204,14 +204,19 @@ export default function TenantCustomers() {
       const custData = await custRes.json();
       const prodData = await prodRes.json();
 
-      setCustomers(custData);
-      setProducts(prodData);
+      const customersArray = Array.isArray(custData) ? custData : [];
+      const productsArray = Array.isArray(prodData) ? prodData : [];
 
-      if (prodData.length > 0 && !addReqProductId) {
-        setAddReqProductId(prodData[0].id);
+      setCustomers(customersArray);
+      setProducts(productsArray);
+
+      if (productsArray.length > 0 && !addReqProductId) {
+        setAddReqProductId(productsArray[0].id);
       }
     } catch (err) {
       console.error('Failed to fetch customers:', err);
+      setCustomers([]);
+      setProducts([]);
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,7 @@ const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
-  const limit = 5; // 1分間に5回
+  const limit = 30; // 1分間に30回
   const windowMs = 60 * 1000;
 
   const record = rateLimitCache.get(ip);
@@ -31,8 +31,8 @@ function isRateLimited(ip: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // APIルートへのレートリミット適用
-  if (pathname.startsWith('/api')) {
+  // APIルートへのレートリミット適用 (GETリクエストは除外)
+  if (pathname.startsWith('/api') && request.method !== 'GET') {
     const ip = (request as any).ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
     if (isRateLimited(ip)) {
       return NextResponse.json(

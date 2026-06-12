@@ -71,9 +71,18 @@ export default function TenantCalendar() {
         return;
       }
       const data = await res.json();
-      setCalendarData(data);
+      if (data && !data.error) {
+        setCalendarData({
+          ...data,
+          visits: Array.isArray(data.visits) ? data.visits : [],
+          holidays: (data.holidays && typeof data.holidays === 'object') ? data.holidays : {}
+        });
+      } else {
+        setCalendarData({ startDate: '', endDate: '', weekOffset: 0, visits: [], holidays: {} });
+      }
     } catch (err) {
       console.error('Failed to load calendar:', err);
+      setCalendarData({ startDate: '', endDate: '', weekOffset: 0, visits: [], holidays: {} });
     } finally {
       setLoading(false);
     }
@@ -83,8 +92,9 @@ export default function TenantCalendar() {
     try {
       const res = await fetch(`/api/${tenantId}/products`);
       const data = await res.json();
-      setAllProducts(data);
-      if (data.length > 0) setAddMedProductId(data[0].id);
+      const productsArray = Array.isArray(data) ? data : [];
+      setAllProducts(productsArray);
+      if (productsArray.length > 0) setAddMedProductId(productsArray[0].id);
     } catch (err) { console.error(err); }
   };
 

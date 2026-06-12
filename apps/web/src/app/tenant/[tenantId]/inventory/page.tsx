@@ -140,17 +140,24 @@ export default function TenantInventory() {
       const purchData = await purchRes.json();
       const dispData = await dispRes.json();
 
-      setProducts(prodData);
-      setPurchases(purchData);
-      setDisposals(dispData);
+      const productsArray = Array.isArray(prodData) ? prodData : [];
+      const purchasesArray = Array.isArray(purchData) ? purchData : [];
+      const disposalsArray = Array.isArray(dispData) ? dispData : [];
 
-      if (prodData.length > 0) {
-        setPurchaseProductId(prodData[0].id);
-        setSaleProductId(prodData[0].id);
-        setDisposalProductId(prodData[0].id);
+      setProducts(productsArray);
+      setPurchases(purchasesArray);
+      setDisposals(disposalsArray);
+
+      if (productsArray.length > 0) {
+        setPurchaseProductId(productsArray[0].id);
+        setSaleProductId(productsArray[0].id);
+        setDisposalProductId(productsArray[0].id);
       }
     } catch (err) {
       console.error('Failed to fetch inventory data:', err);
+      setProducts([]);
+      setPurchases([]);
+      setDisposals([]);
     } finally {
       setLoading(false);
     }

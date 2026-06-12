@@ -39,9 +39,22 @@ export default function TenantDashboard() {
         return;
       }
       const data = await res.json();
-      setDashboardData(data);
+      if (data && !data.error) {
+        setDashboardData({
+          ...data,
+          schedule: Array.isArray(data.schedule) ? data.schedule : [],
+          deadStocks: Array.isArray(data.deadStocks) ? data.deadStocks : [],
+          alerts: {
+            nextWeek: data.alerts && Array.isArray(data.alerts.nextWeek) ? data.alerts.nextWeek : [],
+            nextMonth: data.alerts && Array.isArray(data.alerts.nextMonth) ? data.alerts.nextMonth : [],
+          }
+        });
+      } else {
+        setDashboardData({ schedule: [], deadStocks: [], alerts: { nextWeek: [], nextMonth: [] } });
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
+      setDashboardData({ schedule: [], deadStocks: [], alerts: { nextWeek: [], nextMonth: [] } });
     } finally {
       setLoading(false);
     }
