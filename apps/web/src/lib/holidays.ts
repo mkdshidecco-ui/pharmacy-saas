@@ -1,6 +1,10 @@
 /**
  * 日本の祝日ユーティリティ
  * japanese-holidays パッケージを使い、指定期間の祝日マップを返す
+ *
+ * パッケージ仕様: getHolidaysOf(year) は
+ *   { month: number, date: number (day of month), name: string }[]
+ * を返す。holiday.date は「日付（数値）」であり Date オブジェクトではない。
  */
 // @ts-ignore
 import { getHolidaysOf } from 'japanese-holidays';
@@ -19,14 +23,15 @@ export function getJapaneseHolidaysForRange(
   const endYear = endDate.getFullYear();
 
   for (let year = startYear; year <= endYear; year++) {
-    const holidays = getHolidaysOf(year);
+    // getHolidaysOf は { month: number, date: number, name: string }[] を返す
+    const holidays: { month: number; date: number; name: string }[] = getHolidaysOf(year);
     for (const holiday of holidays) {
-      // holiday.date は Date オブジェクト
-      const d = new Date(holiday.date);
-      const dateStr = d.toISOString().split('T')[0];
+      // month は 1-indexed、date は day of month (1-31)
+      const d = new Date(Date.UTC(year, holiday.month - 1, holiday.date));
 
       // 期間内のみ追加
       if (d >= startDate && d <= endDate) {
+        const dateStr = d.toISOString().split('T')[0];
         result[dateStr] = holiday.name;
       }
     }
