@@ -15,8 +15,12 @@ export async function GET(
   if (!tenant) return NextResponse.json({ error: 'テナントが見つかりません' }, { status: 404 });
 
   const db = getTenantDb(tenant.id);
-  const products = await db.product.findMany({ orderBy: { name: 'asc' } });
+  const products = await db.product.findMany({
+    orderBy: { name: 'asc' },
+    take: 500, // 上限500件でフルスキャンを防止
+  });
   return NextResponse.json(products);
+
 }
 
 export async function POST(

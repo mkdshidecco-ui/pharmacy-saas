@@ -44,9 +44,9 @@ services:
     volumes:
       - saas-data:/data
 
-    # Memory limits for 1GB VM (web: 300MB, OS+linebot: ~400MB remaining)
-    mem_limit: 300m
-    memswap_limit: 600m
+    # Memory limits for 1GB VM (web: 350MB, OS+linebot: ~400MB remaining)
+    mem_limit: 350m
+    memswap_limit: 700m
 
   linebot:
     # --------------------------------------------------------

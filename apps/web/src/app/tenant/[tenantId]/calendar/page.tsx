@@ -485,6 +485,7 @@ export default function TenantCalendar() {
             const dateStr = day.toISOString().split('T')[0];
             const isToday = dateStr === todayStr;
             const dayVisits = visitsByDate[dateStr] || [];
+            const holidayName = calendarData?.holidays?.[dateStr] || null;
 
           return (
             <div
@@ -504,7 +505,7 @@ export default function TenantCalendar() {
                 <span className={`text-xs font-bold ${
                   isToday
                     ? 'bg-indigo-500 text-white w-5 h-5 flex items-center justify-center rounded-full'
-                    : day.getDay() === 0
+                    : day.getDay() === 0 || holidayName
                     ? 'text-rose-400'
                     : day.getDay() === 6
                     ? 'text-blue-400'
@@ -512,9 +513,16 @@ export default function TenantCalendar() {
                 }`}>
                   {day.getDate()}
                 </span>
-                {isToday && (
-                  <span className="text-[9px] bg-indigo-500/20 text-indigo-300 font-bold px-1.5 py-0.2 rounded border border-indigo-500/30">本日</span>
-                )}
+                <div className="flex items-center gap-1">
+                  {holidayName && (
+                    <span className="text-[8px] bg-rose-500/20 text-rose-300 font-bold px-1 py-0.5 rounded border border-rose-500/30 truncate max-w-[70px]" title={holidayName}>
+                      🎌 {holidayName}
+                    </span>
+                  )}
+                  {isToday && (
+                    <span className="text-[9px] bg-indigo-500/20 text-indigo-300 font-bold px-1.5 py-0.2 rounded border border-indigo-500/30">本日</span>
+                  )}
+                </div>
               </div>
 
               {/* 顧客予定リスト */}

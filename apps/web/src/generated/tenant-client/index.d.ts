@@ -53,6 +53,16 @@ export type VisitRecordItem = $Result.DefaultSelection<Prisma.$VisitRecordItemPa
  * 
  */
 export type DisposalRecord = $Result.DefaultSelection<Prisma.$DisposalRecordPayload>
+/**
+ * Model LineUserWhitelist
+ * 
+ */
+export type LineUserWhitelist = $Result.DefaultSelection<Prisma.$LineUserWhitelistPayload>
+/**
+ * Model LineScheduleConfig
+ * 
+ */
+export type LineScheduleConfig = $Result.DefaultSelection<Prisma.$LineScheduleConfigPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -256,6 +266,26 @@ export class PrismaClient<
     * ```
     */
   get disposalRecord(): Prisma.DisposalRecordDelegate<ExtArgs>;
+
+  /**
+   * `prisma.lineUserWhitelist`: Exposes CRUD operations for the **LineUserWhitelist** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LineUserWhitelists
+    * const lineUserWhitelists = await prisma.lineUserWhitelist.findMany()
+    * ```
+    */
+  get lineUserWhitelist(): Prisma.LineUserWhitelistDelegate<ExtArgs>;
+
+  /**
+   * `prisma.lineScheduleConfig`: Exposes CRUD operations for the **LineScheduleConfig** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LineScheduleConfigs
+    * const lineScheduleConfigs = await prisma.lineScheduleConfig.findMany()
+    * ```
+    */
+  get lineScheduleConfig(): Prisma.LineScheduleConfigDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -704,7 +734,9 @@ export namespace Prisma {
     PurchaseRecord: 'PurchaseRecord',
     VisitRecord: 'VisitRecord',
     VisitRecordItem: 'VisitRecordItem',
-    DisposalRecord: 'DisposalRecord'
+    DisposalRecord: 'DisposalRecord',
+    LineUserWhitelist: 'LineUserWhitelist',
+    LineScheduleConfig: 'LineScheduleConfig'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -720,7 +752,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "customer" | "product" | "customerRequirement" | "purchaseRecord" | "visitRecord" | "visitRecordItem" | "disposalRecord"
+      modelProps: "user" | "customer" | "product" | "customerRequirement" | "purchaseRecord" | "visitRecord" | "visitRecordItem" | "disposalRecord" | "lineUserWhitelist" | "lineScheduleConfig"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1281,6 +1313,146 @@ export namespace Prisma {
           count: {
             args: Prisma.DisposalRecordCountArgs<ExtArgs>
             result: $Utils.Optional<DisposalRecordCountAggregateOutputType> | number
+          }
+        }
+      }
+      LineUserWhitelist: {
+        payload: Prisma.$LineUserWhitelistPayload<ExtArgs>
+        fields: Prisma.LineUserWhitelistFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LineUserWhitelistFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LineUserWhitelistFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          findFirst: {
+            args: Prisma.LineUserWhitelistFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LineUserWhitelistFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          findMany: {
+            args: Prisma.LineUserWhitelistFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>[]
+          }
+          create: {
+            args: Prisma.LineUserWhitelistCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          createMany: {
+            args: Prisma.LineUserWhitelistCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LineUserWhitelistCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>[]
+          }
+          delete: {
+            args: Prisma.LineUserWhitelistDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          update: {
+            args: Prisma.LineUserWhitelistUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          deleteMany: {
+            args: Prisma.LineUserWhitelistDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LineUserWhitelistUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LineUserWhitelistUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineUserWhitelistPayload>
+          }
+          aggregate: {
+            args: Prisma.LineUserWhitelistAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLineUserWhitelist>
+          }
+          groupBy: {
+            args: Prisma.LineUserWhitelistGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LineUserWhitelistGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LineUserWhitelistCountArgs<ExtArgs>
+            result: $Utils.Optional<LineUserWhitelistCountAggregateOutputType> | number
+          }
+        }
+      }
+      LineScheduleConfig: {
+        payload: Prisma.$LineScheduleConfigPayload<ExtArgs>
+        fields: Prisma.LineScheduleConfigFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LineScheduleConfigFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LineScheduleConfigFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          findFirst: {
+            args: Prisma.LineScheduleConfigFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LineScheduleConfigFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          findMany: {
+            args: Prisma.LineScheduleConfigFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>[]
+          }
+          create: {
+            args: Prisma.LineScheduleConfigCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          createMany: {
+            args: Prisma.LineScheduleConfigCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LineScheduleConfigCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>[]
+          }
+          delete: {
+            args: Prisma.LineScheduleConfigDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          update: {
+            args: Prisma.LineScheduleConfigUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          deleteMany: {
+            args: Prisma.LineScheduleConfigDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LineScheduleConfigUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LineScheduleConfigUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LineScheduleConfigPayload>
+          }
+          aggregate: {
+            args: Prisma.LineScheduleConfigAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLineScheduleConfig>
+          }
+          groupBy: {
+            args: Prisma.LineScheduleConfigGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LineScheduleConfigGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LineScheduleConfigCountArgs<ExtArgs>
+            result: $Utils.Optional<LineScheduleConfigCountAggregateOutputType> | number
           }
         }
       }
@@ -9447,6 +9619,1734 @@ export namespace Prisma {
 
 
   /**
+   * Model LineUserWhitelist
+   */
+
+  export type AggregateLineUserWhitelist = {
+    _count: LineUserWhitelistCountAggregateOutputType | null
+    _min: LineUserWhitelistMinAggregateOutputType | null
+    _max: LineUserWhitelistMaxAggregateOutputType | null
+  }
+
+  export type LineUserWhitelistMinAggregateOutputType = {
+    id: string | null
+    lineUserId: string | null
+    addedAt: Date | null
+  }
+
+  export type LineUserWhitelistMaxAggregateOutputType = {
+    id: string | null
+    lineUserId: string | null
+    addedAt: Date | null
+  }
+
+  export type LineUserWhitelistCountAggregateOutputType = {
+    id: number
+    lineUserId: number
+    addedAt: number
+    _all: number
+  }
+
+
+  export type LineUserWhitelistMinAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    addedAt?: true
+  }
+
+  export type LineUserWhitelistMaxAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    addedAt?: true
+  }
+
+  export type LineUserWhitelistCountAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    addedAt?: true
+    _all?: true
+  }
+
+  export type LineUserWhitelistAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LineUserWhitelist to aggregate.
+     */
+    where?: LineUserWhitelistWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineUserWhitelists to fetch.
+     */
+    orderBy?: LineUserWhitelistOrderByWithRelationInput | LineUserWhitelistOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LineUserWhitelistWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineUserWhitelists from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineUserWhitelists.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LineUserWhitelists
+    **/
+    _count?: true | LineUserWhitelistCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LineUserWhitelistMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LineUserWhitelistMaxAggregateInputType
+  }
+
+  export type GetLineUserWhitelistAggregateType<T extends LineUserWhitelistAggregateArgs> = {
+        [P in keyof T & keyof AggregateLineUserWhitelist]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLineUserWhitelist[P]>
+      : GetScalarType<T[P], AggregateLineUserWhitelist[P]>
+  }
+
+
+
+
+  export type LineUserWhitelistGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LineUserWhitelistWhereInput
+    orderBy?: LineUserWhitelistOrderByWithAggregationInput | LineUserWhitelistOrderByWithAggregationInput[]
+    by: LineUserWhitelistScalarFieldEnum[] | LineUserWhitelistScalarFieldEnum
+    having?: LineUserWhitelistScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LineUserWhitelistCountAggregateInputType | true
+    _min?: LineUserWhitelistMinAggregateInputType
+    _max?: LineUserWhitelistMaxAggregateInputType
+  }
+
+  export type LineUserWhitelistGroupByOutputType = {
+    id: string
+    lineUserId: string
+    addedAt: Date
+    _count: LineUserWhitelistCountAggregateOutputType | null
+    _min: LineUserWhitelistMinAggregateOutputType | null
+    _max: LineUserWhitelistMaxAggregateOutputType | null
+  }
+
+  type GetLineUserWhitelistGroupByPayload<T extends LineUserWhitelistGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LineUserWhitelistGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LineUserWhitelistGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LineUserWhitelistGroupByOutputType[P]>
+            : GetScalarType<T[P], LineUserWhitelistGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LineUserWhitelistSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lineUserId?: boolean
+    addedAt?: boolean
+  }, ExtArgs["result"]["lineUserWhitelist"]>
+
+  export type LineUserWhitelistSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lineUserId?: boolean
+    addedAt?: boolean
+  }, ExtArgs["result"]["lineUserWhitelist"]>
+
+  export type LineUserWhitelistSelectScalar = {
+    id?: boolean
+    lineUserId?: boolean
+    addedAt?: boolean
+  }
+
+
+  export type $LineUserWhitelistPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LineUserWhitelist"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      lineUserId: string
+      addedAt: Date
+    }, ExtArgs["result"]["lineUserWhitelist"]>
+    composites: {}
+  }
+
+  type LineUserWhitelistGetPayload<S extends boolean | null | undefined | LineUserWhitelistDefaultArgs> = $Result.GetResult<Prisma.$LineUserWhitelistPayload, S>
+
+  type LineUserWhitelistCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LineUserWhitelistFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LineUserWhitelistCountAggregateInputType | true
+    }
+
+  export interface LineUserWhitelistDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LineUserWhitelist'], meta: { name: 'LineUserWhitelist' } }
+    /**
+     * Find zero or one LineUserWhitelist that matches the filter.
+     * @param {LineUserWhitelistFindUniqueArgs} args - Arguments to find a LineUserWhitelist
+     * @example
+     * // Get one LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LineUserWhitelistFindUniqueArgs>(args: SelectSubset<T, LineUserWhitelistFindUniqueArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LineUserWhitelist that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LineUserWhitelistFindUniqueOrThrowArgs} args - Arguments to find a LineUserWhitelist
+     * @example
+     * // Get one LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LineUserWhitelistFindUniqueOrThrowArgs>(args: SelectSubset<T, LineUserWhitelistFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LineUserWhitelist that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistFindFirstArgs} args - Arguments to find a LineUserWhitelist
+     * @example
+     * // Get one LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LineUserWhitelistFindFirstArgs>(args?: SelectSubset<T, LineUserWhitelistFindFirstArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LineUserWhitelist that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistFindFirstOrThrowArgs} args - Arguments to find a LineUserWhitelist
+     * @example
+     * // Get one LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LineUserWhitelistFindFirstOrThrowArgs>(args?: SelectSubset<T, LineUserWhitelistFindFirstOrThrowArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LineUserWhitelists that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LineUserWhitelists
+     * const lineUserWhitelists = await prisma.lineUserWhitelist.findMany()
+     * 
+     * // Get first 10 LineUserWhitelists
+     * const lineUserWhitelists = await prisma.lineUserWhitelist.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const lineUserWhitelistWithIdOnly = await prisma.lineUserWhitelist.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LineUserWhitelistFindManyArgs>(args?: SelectSubset<T, LineUserWhitelistFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LineUserWhitelist.
+     * @param {LineUserWhitelistCreateArgs} args - Arguments to create a LineUserWhitelist.
+     * @example
+     * // Create one LineUserWhitelist
+     * const LineUserWhitelist = await prisma.lineUserWhitelist.create({
+     *   data: {
+     *     // ... data to create a LineUserWhitelist
+     *   }
+     * })
+     * 
+     */
+    create<T extends LineUserWhitelistCreateArgs>(args: SelectSubset<T, LineUserWhitelistCreateArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LineUserWhitelists.
+     * @param {LineUserWhitelistCreateManyArgs} args - Arguments to create many LineUserWhitelists.
+     * @example
+     * // Create many LineUserWhitelists
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LineUserWhitelistCreateManyArgs>(args?: SelectSubset<T, LineUserWhitelistCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LineUserWhitelists and returns the data saved in the database.
+     * @param {LineUserWhitelistCreateManyAndReturnArgs} args - Arguments to create many LineUserWhitelists.
+     * @example
+     * // Create many LineUserWhitelists
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LineUserWhitelists and only return the `id`
+     * const lineUserWhitelistWithIdOnly = await prisma.lineUserWhitelist.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LineUserWhitelistCreateManyAndReturnArgs>(args?: SelectSubset<T, LineUserWhitelistCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LineUserWhitelist.
+     * @param {LineUserWhitelistDeleteArgs} args - Arguments to delete one LineUserWhitelist.
+     * @example
+     * // Delete one LineUserWhitelist
+     * const LineUserWhitelist = await prisma.lineUserWhitelist.delete({
+     *   where: {
+     *     // ... filter to delete one LineUserWhitelist
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LineUserWhitelistDeleteArgs>(args: SelectSubset<T, LineUserWhitelistDeleteArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LineUserWhitelist.
+     * @param {LineUserWhitelistUpdateArgs} args - Arguments to update one LineUserWhitelist.
+     * @example
+     * // Update one LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LineUserWhitelistUpdateArgs>(args: SelectSubset<T, LineUserWhitelistUpdateArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LineUserWhitelists.
+     * @param {LineUserWhitelistDeleteManyArgs} args - Arguments to filter LineUserWhitelists to delete.
+     * @example
+     * // Delete a few LineUserWhitelists
+     * const { count } = await prisma.lineUserWhitelist.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LineUserWhitelistDeleteManyArgs>(args?: SelectSubset<T, LineUserWhitelistDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LineUserWhitelists.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LineUserWhitelists
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LineUserWhitelistUpdateManyArgs>(args: SelectSubset<T, LineUserWhitelistUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LineUserWhitelist.
+     * @param {LineUserWhitelistUpsertArgs} args - Arguments to update or create a LineUserWhitelist.
+     * @example
+     * // Update or create a LineUserWhitelist
+     * const lineUserWhitelist = await prisma.lineUserWhitelist.upsert({
+     *   create: {
+     *     // ... data to create a LineUserWhitelist
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LineUserWhitelist we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LineUserWhitelistUpsertArgs>(args: SelectSubset<T, LineUserWhitelistUpsertArgs<ExtArgs>>): Prisma__LineUserWhitelistClient<$Result.GetResult<Prisma.$LineUserWhitelistPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LineUserWhitelists.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistCountArgs} args - Arguments to filter LineUserWhitelists to count.
+     * @example
+     * // Count the number of LineUserWhitelists
+     * const count = await prisma.lineUserWhitelist.count({
+     *   where: {
+     *     // ... the filter for the LineUserWhitelists we want to count
+     *   }
+     * })
+    **/
+    count<T extends LineUserWhitelistCountArgs>(
+      args?: Subset<T, LineUserWhitelistCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LineUserWhitelistCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LineUserWhitelist.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LineUserWhitelistAggregateArgs>(args: Subset<T, LineUserWhitelistAggregateArgs>): Prisma.PrismaPromise<GetLineUserWhitelistAggregateType<T>>
+
+    /**
+     * Group by LineUserWhitelist.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineUserWhitelistGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LineUserWhitelistGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LineUserWhitelistGroupByArgs['orderBy'] }
+        : { orderBy?: LineUserWhitelistGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LineUserWhitelistGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLineUserWhitelistGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LineUserWhitelist model
+   */
+  readonly fields: LineUserWhitelistFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LineUserWhitelist.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LineUserWhitelistClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LineUserWhitelist model
+   */ 
+  interface LineUserWhitelistFieldRefs {
+    readonly id: FieldRef<"LineUserWhitelist", 'String'>
+    readonly lineUserId: FieldRef<"LineUserWhitelist", 'String'>
+    readonly addedAt: FieldRef<"LineUserWhitelist", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LineUserWhitelist findUnique
+   */
+  export type LineUserWhitelistFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter, which LineUserWhitelist to fetch.
+     */
+    where: LineUserWhitelistWhereUniqueInput
+  }
+
+  /**
+   * LineUserWhitelist findUniqueOrThrow
+   */
+  export type LineUserWhitelistFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter, which LineUserWhitelist to fetch.
+     */
+    where: LineUserWhitelistWhereUniqueInput
+  }
+
+  /**
+   * LineUserWhitelist findFirst
+   */
+  export type LineUserWhitelistFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter, which LineUserWhitelist to fetch.
+     */
+    where?: LineUserWhitelistWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineUserWhitelists to fetch.
+     */
+    orderBy?: LineUserWhitelistOrderByWithRelationInput | LineUserWhitelistOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LineUserWhitelists.
+     */
+    cursor?: LineUserWhitelistWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineUserWhitelists from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineUserWhitelists.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LineUserWhitelists.
+     */
+    distinct?: LineUserWhitelistScalarFieldEnum | LineUserWhitelistScalarFieldEnum[]
+  }
+
+  /**
+   * LineUserWhitelist findFirstOrThrow
+   */
+  export type LineUserWhitelistFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter, which LineUserWhitelist to fetch.
+     */
+    where?: LineUserWhitelistWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineUserWhitelists to fetch.
+     */
+    orderBy?: LineUserWhitelistOrderByWithRelationInput | LineUserWhitelistOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LineUserWhitelists.
+     */
+    cursor?: LineUserWhitelistWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineUserWhitelists from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineUserWhitelists.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LineUserWhitelists.
+     */
+    distinct?: LineUserWhitelistScalarFieldEnum | LineUserWhitelistScalarFieldEnum[]
+  }
+
+  /**
+   * LineUserWhitelist findMany
+   */
+  export type LineUserWhitelistFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter, which LineUserWhitelists to fetch.
+     */
+    where?: LineUserWhitelistWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineUserWhitelists to fetch.
+     */
+    orderBy?: LineUserWhitelistOrderByWithRelationInput | LineUserWhitelistOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LineUserWhitelists.
+     */
+    cursor?: LineUserWhitelistWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineUserWhitelists from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineUserWhitelists.
+     */
+    skip?: number
+    distinct?: LineUserWhitelistScalarFieldEnum | LineUserWhitelistScalarFieldEnum[]
+  }
+
+  /**
+   * LineUserWhitelist create
+   */
+  export type LineUserWhitelistCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * The data needed to create a LineUserWhitelist.
+     */
+    data: XOR<LineUserWhitelistCreateInput, LineUserWhitelistUncheckedCreateInput>
+  }
+
+  /**
+   * LineUserWhitelist createMany
+   */
+  export type LineUserWhitelistCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LineUserWhitelists.
+     */
+    data: LineUserWhitelistCreateManyInput | LineUserWhitelistCreateManyInput[]
+  }
+
+  /**
+   * LineUserWhitelist createManyAndReturn
+   */
+  export type LineUserWhitelistCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LineUserWhitelists.
+     */
+    data: LineUserWhitelistCreateManyInput | LineUserWhitelistCreateManyInput[]
+  }
+
+  /**
+   * LineUserWhitelist update
+   */
+  export type LineUserWhitelistUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * The data needed to update a LineUserWhitelist.
+     */
+    data: XOR<LineUserWhitelistUpdateInput, LineUserWhitelistUncheckedUpdateInput>
+    /**
+     * Choose, which LineUserWhitelist to update.
+     */
+    where: LineUserWhitelistWhereUniqueInput
+  }
+
+  /**
+   * LineUserWhitelist updateMany
+   */
+  export type LineUserWhitelistUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LineUserWhitelists.
+     */
+    data: XOR<LineUserWhitelistUpdateManyMutationInput, LineUserWhitelistUncheckedUpdateManyInput>
+    /**
+     * Filter which LineUserWhitelists to update
+     */
+    where?: LineUserWhitelistWhereInput
+  }
+
+  /**
+   * LineUserWhitelist upsert
+   */
+  export type LineUserWhitelistUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * The filter to search for the LineUserWhitelist to update in case it exists.
+     */
+    where: LineUserWhitelistWhereUniqueInput
+    /**
+     * In case the LineUserWhitelist found by the `where` argument doesn't exist, create a new LineUserWhitelist with this data.
+     */
+    create: XOR<LineUserWhitelistCreateInput, LineUserWhitelistUncheckedCreateInput>
+    /**
+     * In case the LineUserWhitelist was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LineUserWhitelistUpdateInput, LineUserWhitelistUncheckedUpdateInput>
+  }
+
+  /**
+   * LineUserWhitelist delete
+   */
+  export type LineUserWhitelistDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+    /**
+     * Filter which LineUserWhitelist to delete.
+     */
+    where: LineUserWhitelistWhereUniqueInput
+  }
+
+  /**
+   * LineUserWhitelist deleteMany
+   */
+  export type LineUserWhitelistDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LineUserWhitelists to delete
+     */
+    where?: LineUserWhitelistWhereInput
+  }
+
+  /**
+   * LineUserWhitelist without action
+   */
+  export type LineUserWhitelistDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineUserWhitelist
+     */
+    select?: LineUserWhitelistSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LineScheduleConfig
+   */
+
+  export type AggregateLineScheduleConfig = {
+    _count: LineScheduleConfigCountAggregateOutputType | null
+    _min: LineScheduleConfigMinAggregateOutputType | null
+    _max: LineScheduleConfigMaxAggregateOutputType | null
+  }
+
+  export type LineScheduleConfigMinAggregateOutputType = {
+    id: string | null
+    lineUserId: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LineScheduleConfigMaxAggregateOutputType = {
+    id: string | null
+    lineUserId: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type LineScheduleConfigCountAggregateOutputType = {
+    id: number
+    lineUserId: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type LineScheduleConfigMinAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LineScheduleConfigMaxAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type LineScheduleConfigCountAggregateInputType = {
+    id?: true
+    lineUserId?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type LineScheduleConfigAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LineScheduleConfig to aggregate.
+     */
+    where?: LineScheduleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineScheduleConfigs to fetch.
+     */
+    orderBy?: LineScheduleConfigOrderByWithRelationInput | LineScheduleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LineScheduleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineScheduleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineScheduleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LineScheduleConfigs
+    **/
+    _count?: true | LineScheduleConfigCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LineScheduleConfigMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LineScheduleConfigMaxAggregateInputType
+  }
+
+  export type GetLineScheduleConfigAggregateType<T extends LineScheduleConfigAggregateArgs> = {
+        [P in keyof T & keyof AggregateLineScheduleConfig]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLineScheduleConfig[P]>
+      : GetScalarType<T[P], AggregateLineScheduleConfig[P]>
+  }
+
+
+
+
+  export type LineScheduleConfigGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LineScheduleConfigWhereInput
+    orderBy?: LineScheduleConfigOrderByWithAggregationInput | LineScheduleConfigOrderByWithAggregationInput[]
+    by: LineScheduleConfigScalarFieldEnum[] | LineScheduleConfigScalarFieldEnum
+    having?: LineScheduleConfigScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LineScheduleConfigCountAggregateInputType | true
+    _min?: LineScheduleConfigMinAggregateInputType
+    _max?: LineScheduleConfigMaxAggregateInputType
+  }
+
+  export type LineScheduleConfigGroupByOutputType = {
+    id: string
+    lineUserId: string
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: LineScheduleConfigCountAggregateOutputType | null
+    _min: LineScheduleConfigMinAggregateOutputType | null
+    _max: LineScheduleConfigMaxAggregateOutputType | null
+  }
+
+  type GetLineScheduleConfigGroupByPayload<T extends LineScheduleConfigGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LineScheduleConfigGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LineScheduleConfigGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LineScheduleConfigGroupByOutputType[P]>
+            : GetScalarType<T[P], LineScheduleConfigGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LineScheduleConfigSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lineUserId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["lineScheduleConfig"]>
+
+  export type LineScheduleConfigSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    lineUserId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["lineScheduleConfig"]>
+
+  export type LineScheduleConfigSelectScalar = {
+    id?: boolean
+    lineUserId?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+
+  export type $LineScheduleConfigPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LineScheduleConfig"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      lineUserId: string
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["lineScheduleConfig"]>
+    composites: {}
+  }
+
+  type LineScheduleConfigGetPayload<S extends boolean | null | undefined | LineScheduleConfigDefaultArgs> = $Result.GetResult<Prisma.$LineScheduleConfigPayload, S>
+
+  type LineScheduleConfigCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LineScheduleConfigFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LineScheduleConfigCountAggregateInputType | true
+    }
+
+  export interface LineScheduleConfigDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LineScheduleConfig'], meta: { name: 'LineScheduleConfig' } }
+    /**
+     * Find zero or one LineScheduleConfig that matches the filter.
+     * @param {LineScheduleConfigFindUniqueArgs} args - Arguments to find a LineScheduleConfig
+     * @example
+     * // Get one LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LineScheduleConfigFindUniqueArgs>(args: SelectSubset<T, LineScheduleConfigFindUniqueArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LineScheduleConfig that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LineScheduleConfigFindUniqueOrThrowArgs} args - Arguments to find a LineScheduleConfig
+     * @example
+     * // Get one LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LineScheduleConfigFindUniqueOrThrowArgs>(args: SelectSubset<T, LineScheduleConfigFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LineScheduleConfig that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigFindFirstArgs} args - Arguments to find a LineScheduleConfig
+     * @example
+     * // Get one LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LineScheduleConfigFindFirstArgs>(args?: SelectSubset<T, LineScheduleConfigFindFirstArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LineScheduleConfig that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigFindFirstOrThrowArgs} args - Arguments to find a LineScheduleConfig
+     * @example
+     * // Get one LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LineScheduleConfigFindFirstOrThrowArgs>(args?: SelectSubset<T, LineScheduleConfigFindFirstOrThrowArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LineScheduleConfigs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LineScheduleConfigs
+     * const lineScheduleConfigs = await prisma.lineScheduleConfig.findMany()
+     * 
+     * // Get first 10 LineScheduleConfigs
+     * const lineScheduleConfigs = await prisma.lineScheduleConfig.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const lineScheduleConfigWithIdOnly = await prisma.lineScheduleConfig.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LineScheduleConfigFindManyArgs>(args?: SelectSubset<T, LineScheduleConfigFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LineScheduleConfig.
+     * @param {LineScheduleConfigCreateArgs} args - Arguments to create a LineScheduleConfig.
+     * @example
+     * // Create one LineScheduleConfig
+     * const LineScheduleConfig = await prisma.lineScheduleConfig.create({
+     *   data: {
+     *     // ... data to create a LineScheduleConfig
+     *   }
+     * })
+     * 
+     */
+    create<T extends LineScheduleConfigCreateArgs>(args: SelectSubset<T, LineScheduleConfigCreateArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LineScheduleConfigs.
+     * @param {LineScheduleConfigCreateManyArgs} args - Arguments to create many LineScheduleConfigs.
+     * @example
+     * // Create many LineScheduleConfigs
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LineScheduleConfigCreateManyArgs>(args?: SelectSubset<T, LineScheduleConfigCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LineScheduleConfigs and returns the data saved in the database.
+     * @param {LineScheduleConfigCreateManyAndReturnArgs} args - Arguments to create many LineScheduleConfigs.
+     * @example
+     * // Create many LineScheduleConfigs
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LineScheduleConfigs and only return the `id`
+     * const lineScheduleConfigWithIdOnly = await prisma.lineScheduleConfig.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LineScheduleConfigCreateManyAndReturnArgs>(args?: SelectSubset<T, LineScheduleConfigCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LineScheduleConfig.
+     * @param {LineScheduleConfigDeleteArgs} args - Arguments to delete one LineScheduleConfig.
+     * @example
+     * // Delete one LineScheduleConfig
+     * const LineScheduleConfig = await prisma.lineScheduleConfig.delete({
+     *   where: {
+     *     // ... filter to delete one LineScheduleConfig
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LineScheduleConfigDeleteArgs>(args: SelectSubset<T, LineScheduleConfigDeleteArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LineScheduleConfig.
+     * @param {LineScheduleConfigUpdateArgs} args - Arguments to update one LineScheduleConfig.
+     * @example
+     * // Update one LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LineScheduleConfigUpdateArgs>(args: SelectSubset<T, LineScheduleConfigUpdateArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LineScheduleConfigs.
+     * @param {LineScheduleConfigDeleteManyArgs} args - Arguments to filter LineScheduleConfigs to delete.
+     * @example
+     * // Delete a few LineScheduleConfigs
+     * const { count } = await prisma.lineScheduleConfig.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LineScheduleConfigDeleteManyArgs>(args?: SelectSubset<T, LineScheduleConfigDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LineScheduleConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LineScheduleConfigs
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LineScheduleConfigUpdateManyArgs>(args: SelectSubset<T, LineScheduleConfigUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LineScheduleConfig.
+     * @param {LineScheduleConfigUpsertArgs} args - Arguments to update or create a LineScheduleConfig.
+     * @example
+     * // Update or create a LineScheduleConfig
+     * const lineScheduleConfig = await prisma.lineScheduleConfig.upsert({
+     *   create: {
+     *     // ... data to create a LineScheduleConfig
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LineScheduleConfig we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LineScheduleConfigUpsertArgs>(args: SelectSubset<T, LineScheduleConfigUpsertArgs<ExtArgs>>): Prisma__LineScheduleConfigClient<$Result.GetResult<Prisma.$LineScheduleConfigPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LineScheduleConfigs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigCountArgs} args - Arguments to filter LineScheduleConfigs to count.
+     * @example
+     * // Count the number of LineScheduleConfigs
+     * const count = await prisma.lineScheduleConfig.count({
+     *   where: {
+     *     // ... the filter for the LineScheduleConfigs we want to count
+     *   }
+     * })
+    **/
+    count<T extends LineScheduleConfigCountArgs>(
+      args?: Subset<T, LineScheduleConfigCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LineScheduleConfigCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LineScheduleConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LineScheduleConfigAggregateArgs>(args: Subset<T, LineScheduleConfigAggregateArgs>): Prisma.PrismaPromise<GetLineScheduleConfigAggregateType<T>>
+
+    /**
+     * Group by LineScheduleConfig.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LineScheduleConfigGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LineScheduleConfigGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LineScheduleConfigGroupByArgs['orderBy'] }
+        : { orderBy?: LineScheduleConfigGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LineScheduleConfigGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLineScheduleConfigGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LineScheduleConfig model
+   */
+  readonly fields: LineScheduleConfigFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LineScheduleConfig.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LineScheduleConfigClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LineScheduleConfig model
+   */ 
+  interface LineScheduleConfigFieldRefs {
+    readonly id: FieldRef<"LineScheduleConfig", 'String'>
+    readonly lineUserId: FieldRef<"LineScheduleConfig", 'String'>
+    readonly isActive: FieldRef<"LineScheduleConfig", 'Boolean'>
+    readonly createdAt: FieldRef<"LineScheduleConfig", 'DateTime'>
+    readonly updatedAt: FieldRef<"LineScheduleConfig", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LineScheduleConfig findUnique
+   */
+  export type LineScheduleConfigFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which LineScheduleConfig to fetch.
+     */
+    where: LineScheduleConfigWhereUniqueInput
+  }
+
+  /**
+   * LineScheduleConfig findUniqueOrThrow
+   */
+  export type LineScheduleConfigFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which LineScheduleConfig to fetch.
+     */
+    where: LineScheduleConfigWhereUniqueInput
+  }
+
+  /**
+   * LineScheduleConfig findFirst
+   */
+  export type LineScheduleConfigFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which LineScheduleConfig to fetch.
+     */
+    where?: LineScheduleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineScheduleConfigs to fetch.
+     */
+    orderBy?: LineScheduleConfigOrderByWithRelationInput | LineScheduleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LineScheduleConfigs.
+     */
+    cursor?: LineScheduleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineScheduleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineScheduleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LineScheduleConfigs.
+     */
+    distinct?: LineScheduleConfigScalarFieldEnum | LineScheduleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LineScheduleConfig findFirstOrThrow
+   */
+  export type LineScheduleConfigFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which LineScheduleConfig to fetch.
+     */
+    where?: LineScheduleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineScheduleConfigs to fetch.
+     */
+    orderBy?: LineScheduleConfigOrderByWithRelationInput | LineScheduleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LineScheduleConfigs.
+     */
+    cursor?: LineScheduleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineScheduleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineScheduleConfigs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LineScheduleConfigs.
+     */
+    distinct?: LineScheduleConfigScalarFieldEnum | LineScheduleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LineScheduleConfig findMany
+   */
+  export type LineScheduleConfigFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter, which LineScheduleConfigs to fetch.
+     */
+    where?: LineScheduleConfigWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LineScheduleConfigs to fetch.
+     */
+    orderBy?: LineScheduleConfigOrderByWithRelationInput | LineScheduleConfigOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LineScheduleConfigs.
+     */
+    cursor?: LineScheduleConfigWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LineScheduleConfigs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LineScheduleConfigs.
+     */
+    skip?: number
+    distinct?: LineScheduleConfigScalarFieldEnum | LineScheduleConfigScalarFieldEnum[]
+  }
+
+  /**
+   * LineScheduleConfig create
+   */
+  export type LineScheduleConfigCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to create a LineScheduleConfig.
+     */
+    data: XOR<LineScheduleConfigCreateInput, LineScheduleConfigUncheckedCreateInput>
+  }
+
+  /**
+   * LineScheduleConfig createMany
+   */
+  export type LineScheduleConfigCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LineScheduleConfigs.
+     */
+    data: LineScheduleConfigCreateManyInput | LineScheduleConfigCreateManyInput[]
+  }
+
+  /**
+   * LineScheduleConfig createManyAndReturn
+   */
+  export type LineScheduleConfigCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LineScheduleConfigs.
+     */
+    data: LineScheduleConfigCreateManyInput | LineScheduleConfigCreateManyInput[]
+  }
+
+  /**
+   * LineScheduleConfig update
+   */
+  export type LineScheduleConfigUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * The data needed to update a LineScheduleConfig.
+     */
+    data: XOR<LineScheduleConfigUpdateInput, LineScheduleConfigUncheckedUpdateInput>
+    /**
+     * Choose, which LineScheduleConfig to update.
+     */
+    where: LineScheduleConfigWhereUniqueInput
+  }
+
+  /**
+   * LineScheduleConfig updateMany
+   */
+  export type LineScheduleConfigUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LineScheduleConfigs.
+     */
+    data: XOR<LineScheduleConfigUpdateManyMutationInput, LineScheduleConfigUncheckedUpdateManyInput>
+    /**
+     * Filter which LineScheduleConfigs to update
+     */
+    where?: LineScheduleConfigWhereInput
+  }
+
+  /**
+   * LineScheduleConfig upsert
+   */
+  export type LineScheduleConfigUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * The filter to search for the LineScheduleConfig to update in case it exists.
+     */
+    where: LineScheduleConfigWhereUniqueInput
+    /**
+     * In case the LineScheduleConfig found by the `where` argument doesn't exist, create a new LineScheduleConfig with this data.
+     */
+    create: XOR<LineScheduleConfigCreateInput, LineScheduleConfigUncheckedCreateInput>
+    /**
+     * In case the LineScheduleConfig was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LineScheduleConfigUpdateInput, LineScheduleConfigUncheckedUpdateInput>
+  }
+
+  /**
+   * LineScheduleConfig delete
+   */
+  export type LineScheduleConfigDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+    /**
+     * Filter which LineScheduleConfig to delete.
+     */
+    where: LineScheduleConfigWhereUniqueInput
+  }
+
+  /**
+   * LineScheduleConfig deleteMany
+   */
+  export type LineScheduleConfigDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LineScheduleConfigs to delete
+     */
+    where?: LineScheduleConfigWhereInput
+  }
+
+  /**
+   * LineScheduleConfig without action
+   */
+  export type LineScheduleConfigDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LineScheduleConfig
+     */
+    select?: LineScheduleConfigSelect<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -9554,6 +11454,26 @@ export namespace Prisma {
   export type DisposalRecordScalarFieldEnum = (typeof DisposalRecordScalarFieldEnum)[keyof typeof DisposalRecordScalarFieldEnum]
 
 
+  export const LineUserWhitelistScalarFieldEnum: {
+    id: 'id',
+    lineUserId: 'lineUserId',
+    addedAt: 'addedAt'
+  };
+
+  export type LineUserWhitelistScalarFieldEnum = (typeof LineUserWhitelistScalarFieldEnum)[keyof typeof LineUserWhitelistScalarFieldEnum]
+
+
+  export const LineScheduleConfigScalarFieldEnum: {
+    id: 'id',
+    lineUserId: 'lineUserId',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type LineScheduleConfigScalarFieldEnum = (typeof LineScheduleConfigScalarFieldEnum)[keyof typeof LineScheduleConfigScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -9600,6 +11520,13 @@ export namespace Prisma {
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
   /**
    * Deep Input Types
@@ -10120,6 +12047,100 @@ export namespace Prisma {
     reason?: StringNullableWithAggregatesFilter<"DisposalRecord"> | string | null
     disposedAt?: DateTimeWithAggregatesFilter<"DisposalRecord"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"DisposalRecord"> | Date | string
+  }
+
+  export type LineUserWhitelistWhereInput = {
+    AND?: LineUserWhitelistWhereInput | LineUserWhitelistWhereInput[]
+    OR?: LineUserWhitelistWhereInput[]
+    NOT?: LineUserWhitelistWhereInput | LineUserWhitelistWhereInput[]
+    id?: StringFilter<"LineUserWhitelist"> | string
+    lineUserId?: StringFilter<"LineUserWhitelist"> | string
+    addedAt?: DateTimeFilter<"LineUserWhitelist"> | Date | string
+  }
+
+  export type LineUserWhitelistOrderByWithRelationInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    addedAt?: SortOrder
+  }
+
+  export type LineUserWhitelistWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    lineUserId?: string
+    AND?: LineUserWhitelistWhereInput | LineUserWhitelistWhereInput[]
+    OR?: LineUserWhitelistWhereInput[]
+    NOT?: LineUserWhitelistWhereInput | LineUserWhitelistWhereInput[]
+    addedAt?: DateTimeFilter<"LineUserWhitelist"> | Date | string
+  }, "id" | "lineUserId">
+
+  export type LineUserWhitelistOrderByWithAggregationInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    addedAt?: SortOrder
+    _count?: LineUserWhitelistCountOrderByAggregateInput
+    _max?: LineUserWhitelistMaxOrderByAggregateInput
+    _min?: LineUserWhitelistMinOrderByAggregateInput
+  }
+
+  export type LineUserWhitelistScalarWhereWithAggregatesInput = {
+    AND?: LineUserWhitelistScalarWhereWithAggregatesInput | LineUserWhitelistScalarWhereWithAggregatesInput[]
+    OR?: LineUserWhitelistScalarWhereWithAggregatesInput[]
+    NOT?: LineUserWhitelistScalarWhereWithAggregatesInput | LineUserWhitelistScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LineUserWhitelist"> | string
+    lineUserId?: StringWithAggregatesFilter<"LineUserWhitelist"> | string
+    addedAt?: DateTimeWithAggregatesFilter<"LineUserWhitelist"> | Date | string
+  }
+
+  export type LineScheduleConfigWhereInput = {
+    AND?: LineScheduleConfigWhereInput | LineScheduleConfigWhereInput[]
+    OR?: LineScheduleConfigWhereInput[]
+    NOT?: LineScheduleConfigWhereInput | LineScheduleConfigWhereInput[]
+    id?: StringFilter<"LineScheduleConfig"> | string
+    lineUserId?: StringFilter<"LineScheduleConfig"> | string
+    isActive?: BoolFilter<"LineScheduleConfig"> | boolean
+    createdAt?: DateTimeFilter<"LineScheduleConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"LineScheduleConfig"> | Date | string
+  }
+
+  export type LineScheduleConfigOrderByWithRelationInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LineScheduleConfigWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    lineUserId?: string
+    AND?: LineScheduleConfigWhereInput | LineScheduleConfigWhereInput[]
+    OR?: LineScheduleConfigWhereInput[]
+    NOT?: LineScheduleConfigWhereInput | LineScheduleConfigWhereInput[]
+    isActive?: BoolFilter<"LineScheduleConfig"> | boolean
+    createdAt?: DateTimeFilter<"LineScheduleConfig"> | Date | string
+    updatedAt?: DateTimeFilter<"LineScheduleConfig"> | Date | string
+  }, "id" | "lineUserId">
+
+  export type LineScheduleConfigOrderByWithAggregationInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: LineScheduleConfigCountOrderByAggregateInput
+    _max?: LineScheduleConfigMaxOrderByAggregateInput
+    _min?: LineScheduleConfigMinOrderByAggregateInput
+  }
+
+  export type LineScheduleConfigScalarWhereWithAggregatesInput = {
+    AND?: LineScheduleConfigScalarWhereWithAggregatesInput | LineScheduleConfigScalarWhereWithAggregatesInput[]
+    OR?: LineScheduleConfigScalarWhereWithAggregatesInput[]
+    NOT?: LineScheduleConfigScalarWhereWithAggregatesInput | LineScheduleConfigScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LineScheduleConfig"> | string
+    lineUserId?: StringWithAggregatesFilter<"LineScheduleConfig"> | string
+    isActive?: BoolWithAggregatesFilter<"LineScheduleConfig"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"LineScheduleConfig"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LineScheduleConfig"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -10654,6 +12675,104 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type LineUserWhitelistCreateInput = {
+    id?: string
+    lineUserId: string
+    addedAt?: Date | string
+  }
+
+  export type LineUserWhitelistUncheckedCreateInput = {
+    id?: string
+    lineUserId: string
+    addedAt?: Date | string
+  }
+
+  export type LineUserWhitelistUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineUserWhitelistUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineUserWhitelistCreateManyInput = {
+    id?: string
+    lineUserId: string
+    addedAt?: Date | string
+  }
+
+  export type LineUserWhitelistUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineUserWhitelistUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineScheduleConfigCreateInput = {
+    id?: string
+    lineUserId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LineScheduleConfigUncheckedCreateInput = {
+    id?: string
+    lineUserId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LineScheduleConfigUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineScheduleConfigUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineScheduleConfigCreateManyInput = {
+    id?: string
+    lineUserId: string
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type LineScheduleConfigUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LineScheduleConfigUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lineUserId?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -11164,6 +13283,61 @@ export namespace Prisma {
     quantity?: SortOrder
   }
 
+  export type LineUserWhitelistCountOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    addedAt?: SortOrder
+  }
+
+  export type LineUserWhitelistMaxOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    addedAt?: SortOrder
+  }
+
+  export type LineUserWhitelistMinOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    addedAt?: SortOrder
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type LineScheduleConfigCountOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LineScheduleConfigMaxOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type LineScheduleConfigMinOrderByAggregateInput = {
+    id?: SortOrder
+    lineUserId?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -11588,6 +13762,10 @@ export namespace Prisma {
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutDisposalsInput, ProductUpdateWithoutDisposalsInput>, ProductUncheckedUpdateWithoutDisposalsInput>
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -11763,6 +13941,19 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type CustomerRequirementCreateWithoutCustomerInput = {
@@ -12803,6 +14994,14 @@ export namespace Prisma {
      * @deprecated Use DisposalRecordDefaultArgs instead
      */
     export type DisposalRecordArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DisposalRecordDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LineUserWhitelistDefaultArgs instead
+     */
+    export type LineUserWhitelistArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LineUserWhitelistDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use LineScheduleConfigDefaultArgs instead
+     */
+    export type LineScheduleConfigArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = LineScheduleConfigDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

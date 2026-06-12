@@ -82,10 +82,7 @@ export default function TenantSettings() {
     if (typeof window !== 'undefined') {
       const protocol = window.location.protocol;
       const host = window.location.host;
-      // linebotのWebhookエンドポイント（ポート3005をLINE BOTサーバーとする設計）
-      // Oracle Cloudなどのデプロイ環境では LINE BOT 側ポートを公開するか、Next.jsからリバースプロキシするため、
-      // ユーザーが設定すべき Webhook URL のベースを表示します。
-      return `${protocol}//${host.split(':')[0]}:3005/webhook/${settings?.slug || tenantId}`;
+      return `${protocol}//${host}/webhook/${settings?.slug || tenantId}`;
     }
     return `/webhook/${tenantId}`;
   };

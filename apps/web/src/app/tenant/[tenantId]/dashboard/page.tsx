@@ -132,17 +132,19 @@ export default function TenantDashboard() {
     return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
   };
 
-  const getDayBadgeColor = (dateStr: string) => {
+  const getDayBadgeColor = (dateStr: string, isCompleted?: boolean) => {
+    if (isCompleted) return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
     const today = new Date().toISOString().split('T')[0];
     if (dateStr === today) return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
     if (dateStr < today) return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
     return 'bg-blue-500/10 text-blue-300 border border-blue-500/20';
   };
 
-  const getDayLabel = (dateStr: string) => {
+  const getDayLabel = (dateStr: string, isCompleted?: boolean) => {
+    if (isCompleted) return '来店済み';
     const today = new Date().toISOString().split('T')[0];
     if (dateStr === today) return '本日';
-    if (dateStr < today) return '過去予定';
+    if (dateStr < today) return '未送信・過去予定';
     return '今後予定';
   };
 
@@ -316,11 +318,11 @@ export default function TenantDashboard() {
               </thead>
               <tbody className="divide-y divide-slate-800 text-sm">
                 {dashboardData?.schedule?.map((cust: any, index: number) => (
-                  <tr key={index} className="hover:bg-slate-900/35 transition-colors group">
+                  <tr key={index} className={`hover:bg-slate-900/35 transition-colors group ${cust.isCompleted ? 'opacity-50 select-none' : ''}`}>
                     <td className="py-4 px-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getDayBadgeColor(cust.visitDate)}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getDayBadgeColor(cust.visitDate, cust.isCompleted)}`}>
                         <Clock className="w-3.5 h-3.5" />
-                        {getDayLabel(cust.visitDate)}
+                        {getDayLabel(cust.visitDate, cust.isCompleted)}
                       </span>
                     </td>
                     <td className="py-4 px-4 font-semibold text-slate-200">
@@ -344,12 +346,19 @@ export default function TenantDashboard() {
                       )}
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <button
-                        onClick={() => openVisitModal(cust)}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all active:scale-95 shadow-md shadow-emerald-950/20 cursor-pointer"
-                      >
-                        来店完了
-                      </button>
+                      {cust.isCompleted ? (
+                        <span className="text-slate-550 text-xs font-semibold flex items-center justify-end gap-1.5 py-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-slate-500" />
+                          来店済み
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => openVisitModal(cust)}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-all active:scale-95 shadow-md shadow-emerald-950/20 cursor-pointer"
+                        >
+                          来店完了
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

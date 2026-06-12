@@ -181,6 +181,13 @@ export default function TenantInventory() {
     }
   };
 
+  // 在庫数入力値の一時変更
+  const handleStockInputChange = (id: string, value: string) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, currentStock: value } : p))
+    );
+  };
+
   // 商品削除
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('本当にこの商品を削除しますか？紐づく希望商品や履歴も削除されます。')) return;
@@ -540,7 +547,13 @@ export default function TenantInventory() {
                             type="number"
                             step="0.01"
                             value={prod.currentStock}
-                            onChange={(e) => handleUpdateStock(prod.id, parseFloat(e.target.value) || 0)}
+                            onChange={(e) => handleStockInputChange(prod.id, e.target.value)}
+                            onBlur={(e) => handleUpdateStock(prod.id, parseFloat(e.target.value) || 0)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                (e.target as HTMLInputElement).blur();
+                              }
+                            }}
                             disabled={!!actionLoading}
                             className="w-20 bg-transparent text-center border-none text-sm font-semibold focus:outline-none text-white"
                           />

@@ -192,6 +192,20 @@ exports.Prisma.DisposalRecordScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.LineUserWhitelistScalarFieldEnum = {
+  id: 'id',
+  lineUserId: 'lineUserId',
+  addedAt: 'addedAt'
+};
+
+exports.Prisma.LineScheduleConfigScalarFieldEnum = {
+  id: 'id',
+  lineUserId: 'lineUserId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -211,7 +225,9 @@ exports.Prisma.ModelName = {
   PurchaseRecord: 'PurchaseRecord',
   VisitRecord: 'VisitRecord',
   VisitRecordItem: 'VisitRecordItem',
-  DisposalRecord: 'DisposalRecord'
+  DisposalRecord: 'DisposalRecord',
+  LineUserWhitelist: 'LineUserWhitelist',
+  LineScheduleConfig: 'LineScheduleConfig'
 };
 
 /**

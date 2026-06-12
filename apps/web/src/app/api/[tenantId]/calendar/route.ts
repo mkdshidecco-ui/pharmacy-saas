@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { resolveTenant } from '@/lib/utils';
 import { getTenantDb } from '@/lib/tenant-db';
 import { getCalendarVisits } from '@/lib/forecast';
+import { getJapaneseHolidaysForRange } from '@/lib/holidays';
 
 export async function GET(
   request: Request,
@@ -21,26 +22,30 @@ export async function GET(
     const url = new URL(request.url);
     const weekOffset = parseInt(url.searchParams.get('weekOffset') || '0', 10);
 
-    // 基準日から weekOffset * 7 日シフトした5週間を表示
+    // 基準日から weekOffset * 7 日シフトした16週間を表示
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     const baseDayOfWeek = today.getUTCDay();
-    
+
     // その週の日曜日（UTC）から4週前を起点
     const baseSunday = new Date(today);
     baseSunday.setUTCDate(today.getUTCDate() - baseDayOfWeek - 28 + weekOffset * 7);
-    
+
     const endDate = new Date(baseSunday);
     endDate.setUTCDate(baseSunday.getUTCDate() + 111); // 112日間 (16週間)
 
     const db = getTenantDb(tenant.id);
-    const visits = await getCalendarVisits(db, baseSunday, endDate);
+    const [visits, holidays] = await Promise.all([
+      getCalendarVisits(db, baseSunday, endDate),
+      Promise.resolve(getJapaneseHolidaysForRange(baseSunday, endDate)),
+    ]);
 
     return NextResponse.json({
       startDate: baseSunday.toISOString().split('T')[0],
       endDate: endDate.toISOString().split('T')[0],
       weekOffset,
       visits,
+      holidays,
     });
   } catch (error) {
     console.error('Calendar API error:', error);

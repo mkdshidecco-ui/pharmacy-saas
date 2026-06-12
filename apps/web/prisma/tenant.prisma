@@ -114,3 +114,19 @@ model DisposalRecord {
   createdAt   DateTime @default(now())
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
+
+// LINE Bot ユーザーホワイトリスト
+// ホワイトリストに存在しない LINE userId はBotを使用できない
+model LineUserWhitelist {
+  id         String   @id @default(uuid())
+  lineUserId String   @unique
+  addedAt    DateTime @default(now())
+}
+// LINE 自動スケジュール送信設定
+model LineScheduleConfig {
+  id         String   @id @default(uuid())
+  lineUserId String   @unique
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

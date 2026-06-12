@@ -3,8 +3,44 @@ import type { NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { SessionData, sessionOptions } from '@/lib/session';
 
+// IPごとのリクエストカウントを保持するメモリキャッシュ
+const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const limit = 5; // 1分間に5回
+  const windowMs = 60 * 1000;
+
+  const record = rateLimitCache.get(ip);
+  if (!record) {
+    rateLimitCache.set(ip, { count: 1, resetTime: now + windowMs });
+    return false;
+  }
+
+  if (now > record.resetTime) {
+    // 期間が過ぎたらリセット
+    record.count = 1;
+    record.resetTime = now + windowMs;
+    return false;
+  }
+
+  record.count += 1;
+  return record.count > limit;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // APIルートへのレートリミット適用
+  if (pathname.startsWith('/api')) {
+    const ip = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: 'リクエストが多すぎます。1分後に再度お試しください。' },
+        { status: 429 }
+      );
+    }
+  }
 
   // 静的ファイル・公開ページはスキップ
   if (
