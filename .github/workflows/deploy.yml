@@ -20,51 +20,6 @@ env:
 
 jobs:
   # ============================================================
-  # JOB 0 (ワンタイム): 新しい Ed25519 デプロイキーを OCI VM に登録
-  #
-  # 目的: 既存の OCI_SSH_KEY を使って OCI VM の authorized_keys に
-  #       新しい Ed25519 公開鍵 (OCI_DEPLOY_PUBKEY) を追加する。
-  #
-  # ✅ 完了後の手順:
-  #   1. GitHub Secret の OCI_SSH_KEY を新しい秘密鍵に更新
-  #   2. OCI_DEPLOY_PUBKEY Secret を削除
-  #   3. このジョブ (register-deploy-key) をワークフローから削除
-  # ============================================================
-  register-deploy-key:
-    name: "Job0 (One-time): Register Ed25519 deploy key on OCI VM"
-    runs-on: ubuntu-latest
-    # OCI_DEPLOY_PUBKEY が設定されている場合のみ実行
-    if: ${{ secrets.OCI_DEPLOY_PUBKEY != '' }}
-
-    steps:
-      - name: "SSH: Add new Ed25519 public key to authorized_keys"
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          NEW_PUBKEY: ${{ secrets.OCI_DEPLOY_PUBKEY }}
-        with:
-          host: ${{ secrets.OCI_VM_HOST }}
-          username: ${{ secrets.OCI_VM_USER }}
-          key: ${{ secrets.OCI_SSH_KEY }}
-          port: 22
-          timeout: 30s
-          envs: NEW_PUBKEY
-          script: |
-            set -euo pipefail
-            AUTHORIZED_KEYS="${HOME}/.ssh/authorized_keys"
-            mkdir -p "${HOME}/.ssh"
-            chmod 700 "${HOME}/.ssh"
-            touch "${AUTHORIZED_KEYS}"
-            chmod 600 "${AUTHORIZED_KEYS}"
-            echo "[Deploy Key] Checking authorized_keys..."
-            if grep -qF "${NEW_PUBKEY}" "${AUTHORIZED_KEYS}" 2>/dev/null; then
-              echo "[Deploy Key] Key already registered. Skipping."
-            else
-              echo "${NEW_PUBKEY}" >> "${AUTHORIZED_KEYS}"
-              echo "[Deploy Key] New Ed25519 deploy key added successfully."
-            fi
-            echo "[Deploy Key] Total authorized keys: $(wc -l < ${AUTHORIZED_KEYS})"
-
-  # ============================================================
   # JOB 1: Build Docker images on GitHub-hosted runner
   #
   # Rationale: OCI VM.Standard.E2.1.Micro has only 1GB RAM.
@@ -80,14 +35,10 @@ jobs:
       packages: write   # Required to push packages to GHCR
 
     steps:
-      # ---------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------
       # Login to GHCR using the built-in GITHUB_TOKEN.
-      # No extra secrets needed for this step.
-      # ---------------------------------------------------------
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -95,9 +46,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---------------------------------------------------------
-      # Setup Buildx for layer caching support
-      # ---------------------------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -110,11 +58,8 @@ jobs:
         with:
           images: ${{ env.IMAGE_WEB }}
           tags: |
-            # Branch name tag  (e.g. "main")
             type=ref,event=branch
-            # Short commit SHA  (e.g. "sha-abc1234")
             type=sha,prefix=sha-
-            # "latest" tag only on main branch pushes
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: "Web: Build and push image"
@@ -125,7 +70,6 @@ jobs:
           push: true
           tags: ${{ steps.meta-web.outputs.tags }}
           labels: ${{ steps.meta-web.outputs.labels }}
-          # Reuse cached layers between runs (speeds up builds significantly)
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -164,9 +108,8 @@ jobs:
   # Required GitHub Secrets (Settings > Secrets > Actions):
   #   OCI_VM_HOST   : Public IP address of the OCI VM
   #   OCI_VM_USER   : SSH login user (e.g. "ubuntu" or "opc")
-  #   OCI_SSH_KEY   : Private SSH key in PEM format
-  #   GHCR_PAT      : GitHub Personal Access Token with
-  #                   read:packages scope (for docker login on VM)
+  #   OCI_SSH_KEY   : Private SSH key (Ed25519 OpenSSH format)
+  #   GHCR_PAT      : GitHub Personal Access Token (read:packages)
   # ============================================================
   deploy:
     name: "Job2: Deploy to OCI VM via SSH"
@@ -197,7 +140,6 @@ jobs:
 
             # ------------------------------------------------
             # [1/4] Login to GHCR on the VM
-            #       Uses GHCR_PAT secret (read:packages scope)
             # ------------------------------------------------
             echo "[1/4] Logging in to GHCR..."
             echo "$GHCR_PAT" | docker login ghcr.io \
@@ -207,20 +149,16 @@ jobs:
 
             # ------------------------------------------------
             # [2/4] Update repository on the VM
-            #       - 初回: git clone でリポジトリを取得
-            #       - 2回目以降: git fetch & reset で強制同期
             # ------------------------------------------------
             echo "[2/4] Updating repository on VM..."
             REPO_DIR=~/pharmacy-saas
             REPO_URL="https://${GHCR_PAT}@github.com/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas.git"
 
             if [ -d "$REPO_DIR/.git" ]; then
-              echo "      Repository exists. Resetting and pulling latest changes..."
               cd "$REPO_DIR"
               git fetch origin main
               git reset --hard origin/main
             else
-              echo "      Repository not found. Cloning for the first time..."
               git clone "$REPO_URL" "$REPO_DIR"
               cd "$REPO_DIR"
             fi
@@ -239,8 +177,6 @@ jobs:
 
             # ------------------------------------------------
             # [4/4] Restart containers
-            #       --no-build : never build on VM
-            #       -d         : detached (background) mode
             # ------------------------------------------------
             echo "[4/4] Restarting containers..."
             docker compose \
@@ -248,9 +184,6 @@ jobs:
               up -d --no-build
             echo "      Containers started."
 
-            # ------------------------------------------------
-            # Summary
-            # ------------------------------------------------
             echo ""
             echo "=== Deployment complete ==="
             docker compose ps

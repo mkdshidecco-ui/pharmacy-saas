@@ -1,0 +1,63 @@
+name: Register Ed25519 Deploy Key (One-time)
+
+# ============================================================
+# このワークフローは「一度だけ」手動実行するためのものです。
+#
+# 目的:
+#   既存の OCI_SSH_KEY を使って OCI VM の ~/.ssh/authorized_keys に
+#   新しい Ed25519 公開鍵（OCI_DEPLOY_PUBKEY）を追加する。
+#
+# 実行手順:
+#   1. GitHub Settings > Secrets > Actions で以下を登録:
+#      - OCI_DEPLOY_PUBKEY : 新しい Ed25519 公開鍵（1行）
+#        例) ssh-ed25519 AAAAC3Nz... github-actions-deploy@pharmacy-saas
+#   2. このワークフローを Actions タブから手動実行
+#   3. Job が成功したら:
+#      a. GitHub Settings > Secrets > Actions で OCI_SSH_KEY を更新
+#         （値: 新しい Ed25519 秘密鍵 = BEGIN OPENSSH PRIVATE KEY の中身）
+#      b. OCI_DEPLOY_PUBKEY Secret を削除
+#      c. このワークフローファイルをリポジトリから削除
+# ============================================================
+on:
+  workflow_dispatch:
+
+jobs:
+  register-deploy-key:
+    name: "Add Ed25519 public key to OCI VM authorized_keys"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "SSH: Append new public key to ~/.ssh/authorized_keys"
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          NEW_PUBKEY: ${{ secrets.OCI_DEPLOY_PUBKEY }}
+        with:
+          host: ${{ secrets.OCI_VM_HOST }}
+          username: ${{ secrets.OCI_VM_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          timeout: 30s
+          envs: NEW_PUBKEY
+          script: |
+            set -euo pipefail
+
+            AUTHORIZED_KEYS="${HOME}/.ssh/authorized_keys"
+            mkdir -p "${HOME}/.ssh"
+            chmod 700 "${HOME}/.ssh"
+            touch "${AUTHORIZED_KEYS}"
+            chmod 600 "${AUTHORIZED_KEYS}"
+
+            echo "[Deploy Key] Checking authorized_keys..."
+            if grep -qF "${NEW_PUBKEY}" "${AUTHORIZED_KEYS}" 2>/dev/null; then
+              echo "[Deploy Key] Key already registered. Nothing to do."
+            else
+              echo "${NEW_PUBKEY}" >> "${AUTHORIZED_KEYS}"
+              echo "[Deploy Key] ✅ New Ed25519 deploy key added successfully."
+            fi
+
+            echo "[Deploy Key] Total authorized keys: $(wc -l < ${AUTHORIZED_KEYS})"
+            echo ""
+            echo "=== Next Steps ==="
+            echo "1. Update GitHub Secret OCI_SSH_KEY with the new Ed25519 private key"
+            echo "2. Delete OCI_DEPLOY_PUBKEY secret"
+            echo "3. Delete this workflow file (.github/workflows/register-deploy-key.yml)"
