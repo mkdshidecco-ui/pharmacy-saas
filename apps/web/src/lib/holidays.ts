@@ -2,6 +2,7 @@
  * 日本の祝日ユーティリティ
  * japanese-holidays パッケージを使い、指定期間の祝日マップを返す
  */
+// @ts-ignore
 import { getHolidaysOf } from 'japanese-holidays';
 
 /**

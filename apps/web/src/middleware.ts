@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
 
   // APIルートへのレートリミット適用
   if (pathname.startsWith('/api')) {
-    const ip = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+    const ip = (request as any).ip || request.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
     if (isRateLimited(ip)) {
       return NextResponse.json(
         { error: 'リクエストが多すぎます。1分後に再度お試しください。' },

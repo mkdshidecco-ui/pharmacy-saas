@@ -1,5 +1,6 @@
 import { PrismaClient as TenantPrismaClient } from '@/generated/tenant-client';
 import path from 'path';
+// @ts-ignore
 import Database from 'better-sqlite3';
 
 // テナントDBクライアントのキャッシュ
