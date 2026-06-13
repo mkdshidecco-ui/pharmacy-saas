@@ -6,6 +6,30 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const fs = require('fs');
 
+function getJSTDate() {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(now);
+  const getPart = type => parts.find(p => p.type === type).value;
+  return new Date(
+    parseInt(getPart('year'), 10),
+    parseInt(getPart('month'), 10) - 1,
+    parseInt(getPart('day'), 10),
+    parseInt(getPart('hour'), 10),
+    parseInt(getPart('minute'), 10),
+    parseInt(getPart('second'), 10)
+  );
+}
+
 /**
  * テナントDBの LineScheduleConfig テーブルが存在しない場合に作成する
  * @param {import('better-sqlite3').Database} db テナントDB
@@ -75,12 +99,10 @@ function unregisterScheduler(db, lineUserId) {
  */
 function getOverdueUnvisitedCustomers(db) {
   // 日本時間の今日の日付文字列 (YYYY-MM-DD) を取得
-  const now = new Date();
-  const jstString = now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" });
-  const jstDate = new Date(jstString);
-  const year = jstDate.getFullYear();
-  const month = String(jstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(jstDate.getDate()).padStart(2, '0');
+  const today = getJSTDate();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
   const todayStr = `${year}-${month}-${day}`;
 
   // 周期設定のある顧客を全て取得
@@ -114,7 +136,7 @@ function getOverdueUnvisitedCustomers(db) {
  */
 async function runDailyScheduleJob(systemDb, dataRoot) {
   try {
-    const today = new Date();
+    const today = getJSTDate();
     const dayOfWeek = today.getDay(); // 0:日, 1:月, ..., 6:土
 
     // 日曜日は送信しない

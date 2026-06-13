@@ -26,7 +26,15 @@ const formatDate = (dateStr: string) => {
   return dateStr;
 };
 
-const todayStr = new Date().toISOString().split('T')[0];
+const getLocalDateStr = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const todayStr = getLocalDateStr();
 
 export default function TenantCalendar() {
   const params = useParams();

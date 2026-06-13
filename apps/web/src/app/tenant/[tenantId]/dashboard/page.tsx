@@ -147,7 +147,7 @@ export default function TenantDashboard() {
 
   const getDayBadgeColor = (dateStr: string, isCompleted?: boolean) => {
     if (isCompleted) return 'bg-slate-500/20 text-slate-400 border border-slate-500/30';
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE');
     if (dateStr === today) return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
     if (dateStr < today) return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
     return 'bg-blue-500/10 text-blue-300 border border-blue-500/20';
@@ -155,7 +155,7 @@ export default function TenantDashboard() {
 
   const getDayLabel = (dateStr: string, isCompleted?: boolean) => {
     if (isCompleted) return '来店済み';
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('sv-SE');
     if (dateStr === today) return '本日';
     if (dateStr < today) return '未送信・過去予定';
     return '今後予定';

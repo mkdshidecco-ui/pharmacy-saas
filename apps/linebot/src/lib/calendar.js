@@ -3,6 +3,30 @@ const path = require('path');
 const Database = require('better-sqlite3');
 const crypto = require('crypto');
 
+function getJSTDate() {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(now);
+  const getPart = type => parts.find(p => p.type === type).value;
+  return new Date(
+    parseInt(getPart('year'), 10),
+    parseInt(getPart('month'), 10) - 1,
+    parseInt(getPart('day'), 10),
+    parseInt(getPart('hour'), 10),
+    parseInt(getPart('minute'), 10),
+    parseInt(getPart('second'), 10)
+  );
+}
+
 function getTenantDb(tenantId) {
   const dataRoot = process.env.DATA_ROOT || '/data';
   const dbPath = path.join(dataRoot, 'tenants', tenantId, 'dev.db');
@@ -43,7 +67,7 @@ function addDays(dateStr, days) {
  * Get a list of 28 Date objects representing 4 weeks:
  */
 function get4WeekCalendarRange() {
-  const today = new Date();
+  const today = getJSTDate();
   const dayOfWeek = today.getDay(); 
   
   const currentSunday = new Date(today);
@@ -66,7 +90,7 @@ function get4WeekCalendarRange() {
  */
 function generateFlexCalendar(list) {
   const days = get4WeekCalendarRange();
-  const today = new Date();
+  const today = getJSTDate();
   
   const weeks = [];
   for (let i = 0; i < 4; i++) {

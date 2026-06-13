@@ -1,12 +1,12 @@
 import { PrismaClient } from '@/generated/tenant-client';
 
 /**
- * 基準日（今日の00:00:00 UTC）を返す
+ * 基準日（日本時間の今日の00:00:00を表すUTC Date）を返す
  */
 export function getBaseDate(): Date {
   const now = new Date();
-  now.setUTCHours(0, 0, 0, 0);
-  return now;
+  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return new Date(Date.UTC(jstNow.getUTCFullYear(), jstNow.getUTCMonth(), jstNow.getUTCDate(), 0, 0, 0, 0));
 }
 
 export const BASE_DATE = getBaseDate();

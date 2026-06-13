@@ -22,9 +22,9 @@ export async function GET(
     const url = new URL(request.url);
     const weekOffset = parseInt(url.searchParams.get('weekOffset') || '0', 10);
 
-    // 基準日から weekOffset * 7 日シフトした16週間を表示
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
+    // 基準日（日本時間の今日の00:00:00を表すUTC Date）から weekOffset * 7 日シフトした16週間を表示
+    const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const today = new Date(Date.UTC(jstNow.getUTCFullYear(), jstNow.getUTCMonth(), jstNow.getUTCDate(), 0, 0, 0, 0));
     const baseDayOfWeek = today.getUTCDay();
 
     // その週の日曜日（UTC）から4週前を起点

@@ -40,6 +40,7 @@ services:
       - SESSION_SECRET=${SESSION_SECRET:-pharmacy-saas-secret-key-change-in-production-must-be-32chars}
       # Limit Node.js heap to prevent OOM on 1GB VM
       - NODE_OPTIONS=--max-old-space-size=256
+      - TZ=Asia/Tokyo
 
     volumes:
       - saas-data:/data
@@ -69,6 +70,7 @@ services:
       - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
       # Limit Node.js heap for linebot (lighter workload than web)
       - NODE_OPTIONS=--max-old-space-size=128
+      - TZ=Asia/Tokyo
 
     volumes:
       - saas-data:/data
