@@ -174,6 +174,11 @@ async function handleEvent(event, tenant, client) {
   }
 
   const lineUserId = event.source.userId;
+  // グループ/ルームの場合はgroupId/roomIdを定期送信の宛先として使用する
+  const schedulerTargetId =
+    event.source.type === 'group' ? event.source.groupId
+    : event.source.type === 'room' ? event.source.roomId
+    : event.source.userId;
   const userText = event.message.text.trim();
   const sessionKey = `${tenant.id}:${lineUserId}`;
   let replyMessage = null;
@@ -277,12 +282,31 @@ async function handleEvent(event, tenant, client) {
     }
 
     // ================================================================
-    // 定期送信開始コマンド
+    // ホワイトリストチェック（未登録ユーザーへの案内）
+    // ================================================================
+    // グループ/ルームの場合はuserIdでホワイトリスト確認
+    if (!isWhitelisted(tenantDb, lineUserId)) {
+      replyMessage = {
+        type: 'text',
+        text: '🔒 このBotを利用するには登録が必要です。\n\n店舗ID（スラッグ）を送信して登録を開始してください。\n店舗IDは管理者にご確認ください。'
+      };
+      await replyMessageWithRetry(client, event.replyToken, replyMessage);
+      return;
+    }
+
+    // ================================================================
+    // 定期送信開始コマンド（認証済みユーザーのみ）
+    // グループラインの場合はgroupIdを、ルームの場合はroomIdを、
+    // 個人の場合はuserIdを宛先として登録する
     // ================================================================
     if (userText === '定期送信開始') {
-      const registered = registerScheduler(tenantDb, lineUserId);
+      const registered = registerScheduler(tenantDb, schedulerTargetId);
       if (registered) {
-        replyMessage = { type: 'text', text: '📢 毎朝8時（日・祝除く）の来店予定（未来店）通知を開始しました。' };
+        const targetLabel =
+          event.source.type === 'group' ? 'このグループ'
+          : event.source.type === 'room' ? 'このルーム'
+          : 'あなた';
+        replyMessage = { type: 'text', text: `📢 毎朝8時（日・祝除く）の来店予定（未来店）通知を${targetLabel}へ開始しました。` };
       } else {
         replyMessage = { type: 'text', text: '定期送信の登録に失敗しました。' };
       }
@@ -291,27 +315,15 @@ async function handleEvent(event, tenant, client) {
     }
 
     // ================================================================
-    // 定期送信終了コマンド
+    // 定期送信終了コマンド（認証済みユーザーのみ）
     // ================================================================
     if (userText === '定期送信終了') {
-      const unregistered = unregisterScheduler(tenantDb, lineUserId);
+      const unregistered = unregisterScheduler(tenantDb, schedulerTargetId);
       if (unregistered) {
         replyMessage = { type: 'text', text: '🔇 定期送信を終了しました。' };
       } else {
         replyMessage = { type: 'text', text: '定期送信は登録されていないか、解除に失敗しました。' };
       }
-      await replyMessageWithRetry(client, event.replyToken, replyMessage);
-      return;
-    }
-
-    // ================================================================
-    // ホワイトリストチェック（未登録ユーザーへの案内）
-    // ================================================================
-    if (!isWhitelisted(tenantDb, lineUserId)) {
-      replyMessage = {
-        type: 'text',
-        text: '🔒 このBotを利用するには登録が必要です。\n\n店舗ID（スラッグ）を送信して登録を開始してください。\n店舗IDは管理者にご確認ください。'
-      };
       await replyMessageWithRetry(client, event.replyToken, replyMessage);
       return;
     }
