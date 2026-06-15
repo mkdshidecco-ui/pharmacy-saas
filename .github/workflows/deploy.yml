@@ -98,95 +98,86 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ============================================================
-  # JOB 2: Deploy to OCI VM via SSH
+  # JOB 2: Deploy on OCI VM via Self-hosted Runner
   #
-  # Runs after Job1 succeeds. SSHes into the OCI VM and:
-  #   1. Pulls the latest docker-compose.yml from Git
-  #   2. Pulls the newly built images from GHCR (no build!)
-  #   3. Restarts containers (entrypoint runs prisma db push)
+  # Runs after Job1 succeeds. The self-hosted runner (running on
+  # the OCI VM itself) directly pulls the latest images from GHCR
+  # and restarts the containers. No external SSH connection needed.
   #
   # Required GitHub Secrets (Settings > Secrets > Actions):
-  #   OCI_VM_HOST   : Public IP address of the OCI VM
-  #   OCI_VM_USER   : SSH login user (e.g. "ubuntu" or "opc")
-  #   OCI_SSH_KEY   : Private SSH key (Ed25519 OpenSSH format)
-  #   GHCR_PAT      : GitHub Personal Access Token (read:packages)
+  #   GHCR_PAT : GitHub Personal Access Token (read:packages)
+  #
+  # Setup: Install GitHub Actions self-hosted runner on OCI VM.
+  #   See: https://github.com/mkdshidecco-ui/pharmacy-saas/settings/actions/runners
   # ============================================================
   deploy:
-    name: "Job2: Deploy to OCI VM via SSH"
-    runs-on: ubuntu-latest
+    name: "Job2: Deploy on OCI VM (self-hosted)"
+    runs-on: self-hosted
     needs: build-and-push
 
     steps:
-      - name: "SSH: Pull images and restart containers on OCI VM"
-        uses: appleboy/ssh-action@v1.0.3
+      - name: "Deploy: Pull images and restart containers"
         env:
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_ACTOR: ${{ github.actor }}
-        with:
-          host: ${{ secrets.OCI_VM_HOST }}
-          username: ${{ secrets.OCI_VM_USER }}
-          key: ${{ secrets.OCI_SSH_KEY }}
-          port: 22
-          timeout: 300s
-          envs: GHCR_PAT,GITHUB_REPOSITORY_OWNER,GITHUB_ACTOR
-          script: |
-            set -euo pipefail
+        run: |
+          set -euo pipefail
 
-            echo "========================================"
-            echo " PharmaSaaS Deployment"
-            echo " Triggered by: $GITHUB_ACTOR"
-            echo "========================================"
+          echo "========================================"
+          echo " PharmaSaaS Deployment"
+          echo " Triggered by: $GITHUB_ACTOR"
+          echo "========================================"
 
-            # ------------------------------------------------
-            # [1/4] Login to GHCR on the VM
-            # ------------------------------------------------
-            echo "[1/4] Logging in to GHCR..."
-            echo "$GHCR_PAT" | docker login ghcr.io \
-              --username "$GITHUB_ACTOR" \
-              --password-stdin
-            echo "      Login OK."
+          # ------------------------------------------------
+          # [1/4] Login to GHCR on the VM
+          # ------------------------------------------------
+          echo "[1/4] Logging in to GHCR..."
+          echo "$GHCR_PAT" | docker login ghcr.io \
+            --username "$GITHUB_ACTOR" \
+            --password-stdin
+          echo "      Login OK."
 
-            # ------------------------------------------------
-            # [2/4] Update repository on the VM
-            # ------------------------------------------------
-            echo "[2/4] Updating repository on VM..."
-            REPO_DIR=~/pharmacy-saas
-            REPO_URL="https://${GHCR_PAT}@github.com/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas.git"
+          # ------------------------------------------------
+          # [2/4] Update repository on the VM
+          # ------------------------------------------------
+          echo "[2/4] Updating repository on VM..."
+          REPO_DIR="$HOME/pharmacy-saas"
+          REPO_URL="https://${GHCR_PAT}@github.com/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas.git"
 
-            if [ -d "$REPO_DIR/.git" ]; then
-              cd "$REPO_DIR"
-              git fetch origin main
-              git reset --hard origin/main
-            else
-              git clone "$REPO_URL" "$REPO_DIR"
-              cd "$REPO_DIR"
-            fi
-            echo "      Repository updated."
+          if [ -d "$REPO_DIR/.git" ]; then
+            cd "$REPO_DIR"
+            git fetch origin main
+            git reset --hard origin/main
+          else
+            git clone "$REPO_URL" "$REPO_DIR"
+            cd "$REPO_DIR"
+          fi
+          echo "      Repository updated."
 
-            # ------------------------------------------------
-            # [3/4] Pull the latest pre-built images from GHCR
-            # ------------------------------------------------
-            echo "[3/4] Pulling latest images from GHCR..."
-            export GHCR_IMAGE_WEB="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest"
-            export GHCR_IMAGE_LINEBOT="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest"
-            docker compose \
-              --env-file .env.production \
-              pull
-            echo "      Images pulled."
+          # ------------------------------------------------
+          # [3/4] Pull the latest pre-built images from GHCR
+          # ------------------------------------------------
+          echo "[3/4] Pulling latest images from GHCR..."
+          export GHCR_IMAGE_WEB="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-web:latest"
+          export GHCR_IMAGE_LINEBOT="ghcr.io/${GITHUB_REPOSITORY_OWNER}/pharmacy-saas-linebot:latest"
+          docker compose \
+            --env-file .env.production \
+            pull
+          echo "      Images pulled."
 
-            # ------------------------------------------------
-            # [4/4] Restart containers
-            # ------------------------------------------------
-            echo "[4/4] Restarting containers..."
-            docker compose \
-              --env-file .env.production \
-              up -d --no-build
-            echo "      Containers started."
+          # ------------------------------------------------
+          # [4/4] Restart containers
+          # ------------------------------------------------
+          echo "[4/4] Restarting containers..."
+          docker compose \
+            --env-file .env.production \
+            up -d --no-build
+          echo "      Containers started."
 
-            echo ""
-            echo "=== Deployment complete ==="
-            docker compose ps
-            echo ""
-            echo "Memory usage:"
-            free -h
+          echo ""
+          echo "=== Deployment complete ==="
+          docker compose ps
+          echo ""
+          echo "Memory usage:"
+          free -h
